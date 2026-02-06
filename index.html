@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IA - Incubator | Le Futur des Apps</title>
+    <meta name="description" content="Le laboratoire d'applications propulsées par l'Intelligence Artificielle.">
+    
+    <script>
+      window.va = window.va || function () { (window.va.q = window.va.q || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/insights/script.js"></script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: white; }
+        
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        .glass-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(99, 102, 241, 0.5);
+            box-shadow: 0 10px 30px -10px rgba(99, 102, 241, 0.3);
+        }
+
+        .blob {
+            position: absolute;
+            filter: blur(80px);
+            z-index: -1;
+            opacity: 0.4;
+            animation: move 10s infinite alternate;
+        }
+        @keyframes move { from { transform: translate(0,0) scale(1); } to { transform: translate(20px, -20px) scale(1.1); } }
+        
+        /* Animation du bandeau */
+        @keyframes slideDown { from { transform: translateY(-100%); } to { transform: translateY(0); } }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col relative overflow-x-hidden">
+
+    <div id="app-browser-alert" class="hidden fixed top-0 left-0 right-0 bg-indigo-600 text-white z-[9999] shadow-2xl animate-[slideDown_0.5s_ease-out]">
+        <div class="container mx-auto px-4 py-4 flex flex-col items-center text-center">
+            <div class="flex items-center gap-2 mb-2">
+                <i class="fa-solid fa-circle-info text-white"></i>
+                <p class="font-bold text-sm md:text-base">Pour une meilleure expérience</p>
+            </div>
+            <p class="text-sm text-indigo-100 mb-3 leading-tight">
+                Le navigateur de TikTok/Instagram limite nos applications.<br>
+                <strong>Ouvrez ce site dans votre navigateur habituel (Chrome, Safari).</strong>
+            </p>
+            <div class="bg-white/20 border border-white/30 rounded-lg p-2 text-xs text-white w-full max-w-xs">
+                Cliquez sur les <strong>...</strong> ou <i class="fa-solid fa-share"></i> puis : <br>
+                <strong>"Ouvrir dans le navigateur"</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="blob bg-indigo-600 w-96 h-96 rounded-full top-0 left-0"></div>
+    <div class="blob bg-purple-600 w-96 h-96 rounded-full bottom-0 right-0 animation-delay-2000"></div>
+
+    <header class="container mx-auto px-6 py-12 text-center transition-all duration-300" id="main-header">
+        <div class="inline-block mb-4 px-3 py-1 rounded-full bg-slate-800 border border-slate-700 text-xs font-semibold tracking-wider text-indigo-400 uppercase">
+            Laboratoire d'Innovation
+        </div>
+        <h1 class="text-5xl md:text-7xl font-extrabold mb-4 tracking-tight">
+            IA <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Incubator</span>
+        </h1>
+        <p class="text-slate-400 text-lg max-w-2xl mx-auto leading-relaxed">
+            Nous créons des outils simples et puissants pour résoudre vos problèmes quotidiens grâce à l'Intelligence Artificielle.
+        </p>
+        
+        <div class="flex flex-wrap justify-center gap-4 mt-8">
+            <a href="https://instagram.com/iaincubator" target="_blank" class="inline-flex items-center gap-2 text-white bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 px-6 py-3 rounded-full font-bold transition shadow-lg hover:shadow-pink-500/25 transform hover:-translate-y-1">
+                <i class="fa-brands fa-instagram text-xl"></i>
+                Instagram
+            </a>
+
+            <a href="https://www.tiktok.com/@iaincubator" target="_blank" class="inline-flex items-center gap-2 text-white bg-black border border-gray-700 hover:bg-gray-900 px-6 py-3 rounded-full font-bold transition shadow-lg hover:shadow-cyan-500/25 transform hover:-translate-y-1">
+                <i class="fa-brands fa-tiktok text-xl"></i>
+                TikTok
+            </a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-12 flex-grow">
+        <h2 class="text-2xl font-bold mb-8 text-slate-200 border-l-4 border-indigo-500 pl-4">Nos Applications En Ligne</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+
+            <a href="https://flash-sell.vercel.app" target="_blank" class="glass-card rounded-2xl p-6 group cursor-pointer block border-l-4 border-l-indigo-500">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-2xl shadow-lg text-white">⚡</div>
+                    <span class="bg-green-500/20 text-green-400 text-xs px-2 py-1 rounded border border-green-500/30">Populaire</span>
+                </div>
+                <h3 class="text-xl font-bold mb-2 group-hover:text-indigo-400 transition">FlashSell</h3>
+                <p class="text-slate-400 text-sm mb-6 leading-relaxed">
+                    L'outil ultime pour Vinted. L'IA rédige une annonce optimisée et réalise une étude de marché. <strong>En 10 secondes l'annonce est prête.</strong>
+                </p>
+                <div class="flex items-center text-indigo-400 text-sm font-semibold group-hover:translate-x-2 transition-transform">Lancer l'app <i class="fa-solid fa-arrow-right ml-2"></i></div>
+            </a>
+
+            <a href="https://claris-app.com/Landing.html" target="_blank" class="glass-card rounded-2xl p-6 group cursor-pointer block border-l-4 border-l-blue-500">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="w-14 h-14 rounded-xl overflow-hidden shadow-lg border border-white/10 bg-slate-900">
+                        <img src="claris-icon.png" alt="Claris" class="w-full h-full object-cover">
+                    </div>
+                    <span class="bg-blue-500/20 text-blue-400 text-xs px-2 py-1 rounded border border-blue-500/30">N°1</span>
+                </div>
+                <h3 class="text-xl font-bold mb-2 group-hover:text-blue-400 transition">Claris</h3>
+                <p class="text-slate-400 text-sm mb-6 leading-relaxed">
+                    L'appli N°1 anti charge mentale (Méthode Eisenhower). Parlez, CLARIS s'occupe de tout (Routines, Focus, Pomodoro).
+                </p>
+                <div class="flex items-center text-blue-400 text-sm font-semibold group-hover:translate-x-2 transition-transform">Découvrir <i class="fa-solid fa-arrow-right ml-2"></i></div>
+            </a>
+
+            <a href="https://mesboitesmagiques.com" target="_blank" class="glass-card rounded-2xl p-6 group cursor-pointer block border-l-4 border-l-purple-500">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="w-14 h-14 rounded-xl overflow-hidden shadow-lg border border-white/10 bg-purple-900">
+                        <img src="story-icon.png" alt="Boites Magiques" class="w-full h-full object-cover">
+                    </div>
+                    <span class="bg-purple-500/20 text-purple-400 text-xs px-2 py-1 rounded border border-purple-500/30">Famille</span>
+                </div>
+                <h3 class="text-xl font-bold mb-2 group-hover:text-purple-400 transition">Mes Boîtes Magiques</h3>
+                <p class="text-slate-400 text-sm mb-6 leading-relaxed">
+                    Histoires illimitées et personnalisées. Avec un <strong>Mode Sommeil</strong> exclusif pour écouter sans écran.
+                </p>
+                <div class="flex items-center text-purple-400 text-sm font-semibold group-hover:translate-x-2 transition-transform">Rêver <i class="fa-solid fa-arrow-right ml-2"></i></div>
+            </a>
+        </div>
+
+        <h2 class="text-2xl font-bold mb-8 text-slate-200 border-l-4 border-slate-500 pl-4">En cours de développement 🏗️</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="glass-card rounded-2xl p-6 opacity-60 hover:opacity-100 transition border-dashed border border-slate-600">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="w-14 h-14 rounded-xl bg-slate-700 flex items-center justify-center text-2xl border border-slate-600">🧠</div>
+                    <span class="bg-slate-700 text-slate-400 text-xs px-2 py-1 rounded border border-slate-600">Santé</span>
+                </div>
+                <h3 class="text-xl font-bold mb-2">MemoryLane</h3>
+                <p class="text-slate-400 text-sm mb-6 leading-relaxed">
+                    Un assistant cognitif bienveillant. Aide les personnes âgées à préserver leurs souvenirs et stimule leur mémoire.
+                </p>
+                <div class="flex items-center text-slate-500 text-sm font-semibold cursor-not-allowed">Prochainement...</div>
+            </div>
+
+            <div class="glass-card rounded-2xl p-6 opacity-60 hover:opacity-100 transition border-dashed border border-slate-600">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="w-14 h-14 rounded-xl bg-slate-700 flex items-center justify-center text-2xl border border-slate-600">🍷</div>
+                    <span class="bg-slate-700 text-slate-400 text-xs px-2 py-1 rounded border border-slate-600">Lifestyle</span>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Le Sommelier</h3>
+                <p class="text-slate-400 text-sm mb-6 leading-relaxed">
+                    Photo du rayon + votre repas = L'IA pointe la meilleure bouteille pour un accord parfait.
+                </p>
+                <div class="flex items-center text-slate-500 text-sm font-semibold cursor-not-allowed">Prochainement...</div>
+            </div>
+
+            <div class="glass-card rounded-2xl p-6 opacity-60 hover:opacity-100 transition border-dashed border border-slate-600">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="w-14 h-14 rounded-xl bg-slate-700 flex items-center justify-center text-2xl border border-slate-600">🔧</div>
+                    <span class="bg-slate-700 text-slate-400 text-xs px-2 py-1 rounded border border-slate-600">Utilitaire</span>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Le Détecteur Garagiste</h3>
+                <p class="text-slate-400 text-sm mb-6 leading-relaxed">
+                    Photographiez votre devis auto : l'IA analyse les tarifs de la région et détecte les arnaques.
+                </p>
+                <div class="flex items-center text-slate-500 text-sm font-semibold cursor-not-allowed">Prochainement...</div>
+            </div>
+            
+             <div class="glass-card rounded-2xl p-6 opacity-60 hover:opacity-100 transition border-dashed border border-slate-600">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="w-14 h-14 rounded-xl bg-slate-700 flex items-center justify-center text-2xl border border-slate-600">🍳</div>
+                    <span class="bg-slate-700 text-slate-400 text-xs px-2 py-1 rounded border border-slate-600">Cuisine</span>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Chef AI</h3>
+                <p class="text-slate-400 text-sm mb-6 leading-relaxed">
+                    Anti-gaspillage : Photo du frigo = Recette gastronomique immédiate.
+                </p>
+                <div class="flex items-center text-slate-500 text-sm font-semibold cursor-not-allowed">Prochainement...</div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="text-center py-8 text-slate-600 text-sm">
+        <p>&copy; 2026 IA - Incubator. Tous droits réservés.</p>
+    </footer>
+
+    <script>
+        const ua = navigator.userAgent.toLowerCase() || navigator.vendor.toLowerCase();
+        
+        // Liste des signatures des navigateurs "in-app"
+        const isInApp = (
+            ua.includes('tiktok') ||
+            ua.includes('musical_ly') ||
+            ua.includes('instagram') ||
+            ua.includes('fbav') ||
+            ua.includes('fban') ||
+            ua.includes('snapchat')
+        );
+
+        if (isInApp) {
+            // Afficher le bandeau BLEU (plus doux)
+            document.getElementById('app-browser-alert').classList.remove('hidden');
+            // Décaler le header
+            document.getElementById('main-header').classList.add('pt-40');
+        }
+    </script>
+
+</body>
+</html>
