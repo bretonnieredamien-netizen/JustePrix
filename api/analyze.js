@@ -1,66 +1,63 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export default async function handler(req, res) {
-  // 1. Sécurité
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Méthode non autorisée' });
-  }
+    // On autorise tout le monde (CORS) pour éviter les blocages
+    res.setHeader('Access-Control-Allow-Credentials', true);
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+    res.setHeader(
+        'Access-Control-Allow-Headers',
+        'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+    );
 
-  try {
-    // 2. Vérification Clé API
-    if (!process.env.GOOGLE_API_KEY) {
-      throw new Error("Clé API Google manquante");
+    // Si c'est une requête "OPTIONS" (vérification du navigateur), on dit OK
+    if (req.method === 'OPTIONS') {
+        res.status(200).end();
+        return;
     }
 
-    // 3. Réception de l'image
-    const { image } = req.body;
-    if (!image) {
-      return res.status(400).json({ error: "Pas d'image reçue" });
+    if (req.method !== 'POST') {
+        return res.status(405).json({ error: 'Method Not Allowed' });
     }
 
-    // 4. Préparation pour Gemini
-    const base64Data = image.split(",")[1];
-    const mimeType = image.split(";")[0].split(":")[1];
+    try {
+        const API_KEY = process.env.GEMINI_API_KEY;
+        if (!API_KEY) {
+            throw new Error('Clé API manquante dans Vercel');
+        }
 
-    const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
-    const model = genAI.getGenerativeModel({ 
-        model: "gemini-2.5-flash",
-        generationConfig: { responseMimeType: "application/json" }
-    });
+        const { image } = req.body;
+        if (!image) {
+            return res.status(400).json({ error: 'Pas d\'image reçue' });
+        }
 
-    // 5. LE NOUVEAU PROMPT "VENDEUR D'ÉLITE" (Court & Percutant)
-    const prompt = `Agis comme un Top Vendeur Vinted. Ta mission : Vendre cet objet le plus vite possible.
-    
-    Analyse l'image et rédige une annonce ULTRA-EFFICACE.
-    
-    Règles d'or pour la description :
-    1. SOIS BREF. Pas de blabla inutile.
-    2. Mets en avant les MEILLEURS ARGUMENTS (Marque, Rareté, État).
-    3. Donne envie immédiatement.
+        const genAI = new GoogleGenerativeAI(API_KEY);
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-    Réponds UNIQUEMENT avec ce JSON strict :
-    {
-        "titre": "Marque Modèle + 2 Mots clés forts (ex: Vintage, Neuf)",
-        "prix": "XX€ - YY€ (Vise la fourchette haute du marché)",
-        "categorie": "Catégorie exacte Vinted",
-        "description": "Rédige exactement 3 lignes percutantes avec des émojis :\n- Ligne 1 : L'état précis et la marque (ex: '🌟 État irréprochable, véritable Nike').\n- Ligne 2 : Le détail qui tue (Matière, Coupe, ou Collection).\n- Ligne 3 : L'argument d'urgence (ex: '⚡️ Pièce rare, partira vite !').",
-        "hashtags": "10 hashtags pertinents séparés par des espaces"
-    }`;
+        const prompt = `Analyse ce devis garage. Donne un JSON : { "score": 5, "status": "ORANGE", "verdict": "Cher", "analyse": "...", "conseil": "..." }`;
 
-    // 6. Génération
-    const result = await model.generateContent([
-        prompt,
-        { inlineData: { data: base64Data, mimeType: mimeType } }
-    ]);
+        const result = await model.generateContent([
+            prompt,
+            { inlineData: { data: image, mimeType: "image/jpeg" } }
+        ]);
 
-    const response = await result.response;
-    const text = response.text();
-    
-    // 7. Envoi de la réponse
-    res.status(200).json(JSON.parse(text));
+        const response = await result.response;
+        let text = response.text();
+        
+        // Nettoyage brutal du JSON
+        text = text.replace(/```json/g, '').replace(/```/g, '').trim();
+        
+        // On essaie de parser
+        try {
+            const data = JSON.parse(text);
+            res.status(200).json(data);
+        } catch (e) {
+            console.error("Erreur JSON:", text);
+            res.status(500).json({ error: "L'IA a mal répondu" });
+        }
 
-  } catch (error) {
-    console.error("ERREUR:", error);
-    res.status(500).json({ error: error.message || "Erreur interne" });
-  }
+    } catch (error) {
+        console.error("Erreur serveur:", error);
+        res.status(500).json({ error: error.message });
+    }
 }
