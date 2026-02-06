@@ -3,214 +3,271 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IA - Incubator | Le Futur des Apps</title>
-    <meta name="description" content="Le laboratoire d'applications propulsées par l'Intelligence Artificielle.">
-    
-    <script>
-      window.va = window.va || function () { (window.va.q = window.va.q || []).push(arguments); };
-    </script>
-    <script defer src="/_vercel/insights/script.js"></script>
-
+    <title>JustePrix Auto - Détecteur d'Arnaques</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: white; }
+        body { font-family: 'Inter', sans-serif; background-color: #0b1120; color: white; }
+        .tech-font { font-family: 'Orbitron', sans-serif; }
         
-        .glass-card {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.3s ease;
-        }
-        .glass-card:hover {
-            transform: translateY(-5px);
-            border-color: rgba(99, 102, 241, 0.5);
-            box-shadow: 0 10px 30px -10px rgba(99, 102, 241, 0.3);
-        }
-
-        .blob {
+        /* Animation du Scanner */
+        .scan-line {
             position: absolute;
-            filter: blur(80px);
-            z-index: -1;
-            opacity: 0.4;
-            animation: move 10s infinite alternate;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: #00ffcc;
+            box-shadow: 0 0 15px #00ffcc;
+            animation: scan 2s infinite linear;
+            display: none;
         }
-        @keyframes move { from { transform: translate(0,0) scale(1); } to { transform: translate(20px, -20px) scale(1.1); } }
-        
-        /* Animation du bandeau */
-        @keyframes slideDown { from { transform: translateY(-100%); } to { transform: translateY(0); } }
+        @keyframes scan { 0% { top: 0; } 50% { top: 100%; } 100% { top: 0; } }
+
+        /* Jauge de Résultat */
+        .gauge-container {
+            width: 100%;
+            height: 20px;
+            background: #1e293b;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        .gauge-fill {
+            height: 100%;
+            width: 0%;
+            transition: width 1s ease-out, background-color 0.5s;
+        }
     </style>
 </head>
-<body class="min-h-screen flex flex-col relative overflow-x-hidden">
+<body class="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden">
 
-    <div id="app-browser-alert" class="hidden fixed top-0 left-0 right-0 bg-indigo-600 text-white z-[9999] shadow-2xl animate-[slideDown_0.5s_ease-out]">
-        <div class="container mx-auto px-4 py-4 flex flex-col items-center text-center">
-            <div class="flex items-center gap-2 mb-2">
-                <i class="fa-solid fa-circle-info text-white"></i>
-                <p class="font-bold text-sm md:text-base">Pour une meilleure expérience</p>
-            </div>
-            <p class="text-sm text-indigo-100 mb-3 leading-tight">
-                Le navigateur de TikTok/Instagram limite nos applications.<br>
-                <strong>Ouvrez ce site dans votre navigateur habituel (Chrome, Safari).</strong>
-            </p>
-            <div class="bg-white/20 border border-white/30 rounded-lg p-2 text-xs text-white w-full max-w-xs">
-                Cliquez sur les <strong>...</strong> ou <i class="fa-solid fa-share"></i> puis : <br>
-                <strong>"Ouvrir dans le navigateur"</strong>
-            </div>
+    <div class="absolute inset-0 z-0 opacity-20" style="background-image: radial-gradient(#1e40af 1px, transparent 1px); background-size: 30px 30px;"></div>
+
+    <header class="text-center z-10 mb-8">
+        <div class="inline-flex items-center gap-2 border border-blue-500/50 bg-blue-900/20 px-4 py-1 rounded-full text-blue-300 text-xs mb-4">
+            <i class="fa-solid fa-shield-halved"></i> IA Anti-Arnaque v1.0
         </div>
-    </div>
-
-    <div class="blob bg-indigo-600 w-96 h-96 rounded-full top-0 left-0"></div>
-    <div class="blob bg-purple-600 w-96 h-96 rounded-full bottom-0 right-0 animation-delay-2000"></div>
-
-    <header class="container mx-auto px-6 py-12 text-center transition-all duration-300" id="main-header">
-        <div class="inline-block mb-4 px-3 py-1 rounded-full bg-slate-800 border border-slate-700 text-xs font-semibold tracking-wider text-indigo-400 uppercase">
-            Laboratoire d'Innovation
-        </div>
-        <h1 class="text-5xl md:text-7xl font-extrabold mb-4 tracking-tight">
-            IA <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Incubator</span>
+        <h1 class="tech-font text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 mb-2">
+            JustePrix
         </h1>
-        <p class="text-slate-400 text-lg max-w-2xl mx-auto leading-relaxed">
-            Nous créons des outils simples et puissants pour résoudre vos problèmes quotidiens grâce à l'Intelligence Artificielle.
+        <p class="text-slate-400 text-sm max-w-xs mx-auto">
+            Scan ton devis garage. L'IA analyse les prix et détecte les abus en 5 secondes.
         </p>
-        
-        <div class="flex flex-wrap justify-center gap-4 mt-8">
-            <a href="https://instagram.com/iaincubator" target="_blank" class="inline-flex items-center gap-2 text-white bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 px-6 py-3 rounded-full font-bold transition shadow-lg hover:shadow-pink-500/25 transform hover:-translate-y-1">
-                <i class="fa-brands fa-instagram text-xl"></i>
-                Instagram
-            </a>
-
-            <a href="https://www.tiktok.com/@iaincubator" target="_blank" class="inline-flex items-center gap-2 text-white bg-black border border-gray-700 hover:bg-gray-900 px-6 py-3 rounded-full font-bold transition shadow-lg hover:shadow-cyan-500/25 transform hover:-translate-y-1">
-                <i class="fa-brands fa-tiktok text-xl"></i>
-                TikTok
-            </a>
-        </div>
     </header>
 
-    <main class="container mx-auto px-6 py-12 flex-grow">
-        <h2 class="text-2xl font-bold mb-8 text-slate-200 border-l-4 border-indigo-500 pl-4">Nos Applications En Ligne</h2>
+    <main class="w-full max-w-md z-10">
         
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+        <div id="upload-card" class="bg-slate-800/80 backdrop-blur-md border border-slate-700 rounded-2xl p-6 shadow-2xl relative overflow-hidden">
+            <div id="scan-line" class="scan-line z-20"></div>
 
-            <a href="https://flash-sell.vercel.app" target="_blank" class="glass-card rounded-2xl p-6 group cursor-pointer block border-l-4 border-l-indigo-500">
-                <div class="flex justify-between items-start mb-4">
-                    <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-2xl shadow-lg text-white">⚡</div>
-                    <span class="bg-green-500/20 text-green-400 text-xs px-2 py-1 rounded border border-green-500/30">Populaire</span>
-                </div>
-                <h3 class="text-xl font-bold mb-2 group-hover:text-indigo-400 transition">FlashSell</h3>
-                <p class="text-slate-400 text-sm mb-6 leading-relaxed">
-                    L'outil ultime pour Vinted. L'IA rédige une annonce optimisée et réalise une étude de marché. <strong>En 10 secondes l'annonce est prête.</strong>
-                </p>
-                <div class="flex items-center text-indigo-400 text-sm font-semibold group-hover:translate-x-2 transition-transform">Lancer l'app <i class="fa-solid fa-arrow-right ml-2"></i></div>
-            </a>
-
-            <a href="https://claris-app.com/Landing.html" target="_blank" class="glass-card rounded-2xl p-6 group cursor-pointer block border-l-4 border-l-blue-500">
-                <div class="flex justify-between items-start mb-4">
-                    <div class="w-14 h-14 rounded-xl overflow-hidden shadow-lg border border-white/10 bg-slate-900">
-                        <img src="claris-icon.png" alt="Claris" class="w-full h-full object-cover">
+            <div class="text-center space-y-6">
+                <label for="file-upload" class="cursor-pointer block border-2 border-dashed border-slate-600 hover:border-cyan-400 hover:bg-slate-700/50 rounded-xl p-8 transition group">
+                    <div class="w-16 h-16 bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition">
+                        <i class="fa-solid fa-camera text-2xl text-cyan-400"></i>
                     </div>
-                    <span class="bg-blue-500/20 text-blue-400 text-xs px-2 py-1 rounded border border-blue-500/30">N°1</span>
-                </div>
-                <h3 class="text-xl font-bold mb-2 group-hover:text-blue-400 transition">Claris</h3>
-                <p class="text-slate-400 text-sm mb-6 leading-relaxed">
-                    L'appli N°1 anti charge mentale (Méthode Eisenhower). Parlez, CLARIS s'occupe de tout (Routines, Focus, Pomodoro).
-                </p>
-                <div class="flex items-center text-blue-400 text-sm font-semibold group-hover:translate-x-2 transition-transform">Découvrir <i class="fa-solid fa-arrow-right ml-2"></i></div>
-            </a>
+                    <h3 class="text-lg font-bold text-white mb-1">Prendre le devis en photo</h3>
+                    <p class="text-xs text-slate-400">ou importer une image</p>
+                    <input id="file-upload" type="file" class="hidden" accept="image/*">
+                </label>
 
-            <a href="https://mesboitesmagiques.com" target="_blank" class="glass-card rounded-2xl p-6 group cursor-pointer block border-l-4 border-l-purple-500">
-                <div class="flex justify-between items-start mb-4">
-                    <div class="w-14 h-14 rounded-xl overflow-hidden shadow-lg border border-white/10 bg-purple-900">
-                        <img src="story-icon.png" alt="Boites Magiques" class="w-full h-full object-cover">
-                    </div>
-                    <span class="bg-purple-500/20 text-purple-400 text-xs px-2 py-1 rounded border border-purple-500/30">Famille</span>
-                </div>
-                <h3 class="text-xl font-bold mb-2 group-hover:text-purple-400 transition">Mes Boîtes Magiques</h3>
-                <p class="text-slate-400 text-sm mb-6 leading-relaxed">
-                    Histoires illimitées et personnalisées. Avec un <strong>Mode Sommeil</strong> exclusif pour écouter sans écran.
-                </p>
-                <div class="flex items-center text-purple-400 text-sm font-semibold group-hover:translate-x-2 transition-transform">Rêver <i class="fa-solid fa-arrow-right ml-2"></i></div>
-            </a>
+                <button id="analyze-btn" class="w-full py-4 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 rounded-xl font-bold text-white shadow-lg shadow-cyan-500/20 transition disabled:opacity-50 disabled:cursor-not-allowed hidden">
+                    LANCER L'ANALYSE
+                </button>
+            </div>
         </div>
 
-        <h2 class="text-2xl font-bold mb-8 text-slate-200 border-l-4 border-slate-500 pl-4">En cours de développement 🏗️</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div class="glass-card rounded-2xl p-6 opacity-60 hover:opacity-100 transition border-dashed border border-slate-600">
-                <div class="flex justify-between items-start mb-4">
-                    <div class="w-14 h-14 rounded-xl bg-slate-700 flex items-center justify-center text-2xl border border-slate-600">🧠</div>
-                    <span class="bg-slate-700 text-slate-400 text-xs px-2 py-1 rounded border border-slate-600">Santé</span>
-                </div>
-                <h3 class="text-xl font-bold mb-2">MemoryLane</h3>
-                <p class="text-slate-400 text-sm mb-6 leading-relaxed">
-                    Un assistant cognitif bienveillant. Aide les personnes âgées à préserver leurs souvenirs et stimule leur mémoire.
-                </p>
-                <div class="flex items-center text-slate-500 text-sm font-semibold cursor-not-allowed">Prochainement...</div>
+        <div id="loading-state" class="hidden text-center mt-8">
+            <div class="flex justify-center items-center gap-3 mb-4">
+                <i class="fa-solid fa-gear fa-spin text-3xl text-cyan-400"></i>
+                <span class="text-cyan-400 font-mono text-lg animate-pulse">Analyse des pièces...</span>
             </div>
+            <p class="text-slate-500 text-xs">Comparaison avec 5000+ tarifs garage en cours</p>
+        </div>
 
-            <div class="glass-card rounded-2xl p-6 opacity-60 hover:opacity-100 transition border-dashed border border-slate-600">
-                <div class="flex justify-between items-start mb-4">
-                    <div class="w-14 h-14 rounded-xl bg-slate-700 flex items-center justify-center text-2xl border border-slate-600">🍷</div>
-                    <span class="bg-slate-700 text-slate-400 text-xs px-2 py-1 rounded border border-slate-600">Lifestyle</span>
-                </div>
-                <h3 class="text-xl font-bold mb-2">Le Sommelier</h3>
-                <p class="text-slate-400 text-sm mb-6 leading-relaxed">
-                    Photo du rayon + votre repas = L'IA pointe la meilleure bouteille pour un accord parfait.
-                </p>
-                <div class="flex items-center text-slate-500 text-sm font-semibold cursor-not-allowed">Prochainement...</div>
-            </div>
-
-            <div class="glass-card rounded-2xl p-6 opacity-60 hover:opacity-100 transition border-dashed border border-slate-600">
-                <div class="flex justify-between items-start mb-4">
-                    <div class="w-14 h-14 rounded-xl bg-slate-700 flex items-center justify-center text-2xl border border-slate-600">🔧</div>
-                    <span class="bg-slate-700 text-slate-400 text-xs px-2 py-1 rounded border border-slate-600">Utilitaire</span>
-                </div>
-                <h3 class="text-xl font-bold mb-2">Le Détecteur Garagiste</h3>
-                <p class="text-slate-400 text-sm mb-6 leading-relaxed">
-                    Photographiez votre devis auto : l'IA analyse les tarifs de la région et détecte les arnaques.
-                </p>
-                <div class="flex items-center text-slate-500 text-sm font-semibold cursor-not-allowed">Prochainement...</div>
-            </div>
+        <div id="result-card" class="hidden bg-slate-800/90 backdrop-blur-xl border border-slate-700 rounded-2xl p-6 shadow-2xl mt-6 animate-[slideDown_0.5s_ease-out]">
             
-             <div class="glass-card rounded-2xl p-6 opacity-60 hover:opacity-100 transition border-dashed border border-slate-600">
-                <div class="flex justify-between items-start mb-4">
-                    <div class="w-14 h-14 rounded-xl bg-slate-700 flex items-center justify-center text-2xl border border-slate-600">🍳</div>
-                    <span class="bg-slate-700 text-slate-400 text-xs px-2 py-1 rounded border border-slate-600">Cuisine</span>
-                </div>
-                <h3 class="text-xl font-bold mb-2">Chef AI</h3>
-                <p class="text-slate-400 text-sm mb-6 leading-relaxed">
-                    Anti-gaspillage : Photo du frigo = Recette gastronomique immédiate.
-                </p>
-                <div class="flex items-center text-slate-500 text-sm font-semibold cursor-not-allowed">Prochainement...</div>
+            <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-4">
+                <span class="text-slate-400 text-xs uppercase tracking-wider">Diagnostic IA</span>
+                <span id="result-badge" class="px-3 py-1 rounded-full text-xs font-bold uppercase bg-gray-700 text-white">En attente</span>
             </div>
+
+            <div class="mb-6 text-center">
+                <h2 id="verdict-title" class="tech-font text-3xl font-bold mb-2">...</h2>
+                <div class="gauge-container">
+                    <div id="score-bar" class="gauge-fill bg-green-500"></div>
+                </div>
+                <div class="flex justify-between text-xs text-slate-500 mt-1 px-1">
+                    <span>Arnaque</span>
+                    <span>Juste</span>
+                </div>
+            </div>
+
+            <div class="bg-slate-900/50 rounded-lg p-4 mb-4 border-l-4 border-cyan-500">
+                <p id="analysis-text" class="text-sm text-slate-300 leading-relaxed">
+                    Analyse en cours...
+                </p>
+            </div>
+
+            <div class="flex gap-3 items-start bg-blue-900/20 p-3 rounded-lg">
+                <i class="fa-solid fa-lightbulb text-yellow-400 mt-1"></i>
+                <p id="advice-text" class="text-xs text-blue-200 italic">
+                    ...
+                </p>
+            </div>
+
+            <button onclick="location.reload()" class="w-full mt-6 py-3 border border-slate-600 hover:bg-slate-700 rounded-xl text-sm font-semibold transition">
+                Scanner un autre devis
+            </button>
         </div>
+
     </main>
 
-    <footer class="text-center py-8 text-slate-600 text-sm">
-        <p>&copy; 2026 IA - Incubator. Tous droits réservés.</p>
-    </footer>
+    <script type="module">
+        import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
 
-    <script>
-        const ua = navigator.userAgent.toLowerCase() || navigator.vendor.toLowerCase();
-        
-        // Liste des signatures des navigateurs "in-app"
-        const isInApp = (
-            ua.includes('tiktok') ||
-            ua.includes('musical_ly') ||
-            ua.includes('instagram') ||
-            ua.includes('fbav') ||
-            ua.includes('fban') ||
-            ua.includes('snapchat')
-        );
+        // ⚠️ REMPLACE TA CLÉ ICI 👇
+        const API_KEY = "TA_CLE_API_GEMINI_ICI"; 
 
-        if (isInApp) {
-            // Afficher le bandeau BLEU (plus doux)
-            document.getElementById('app-browser-alert').classList.remove('hidden');
-            // Décaler le header
-            document.getElementById('main-header').classList.add('pt-40');
+        const fileInput = document.getElementById('file-upload');
+        const analyzeBtn = document.getElementById('analyze-btn');
+        const uploadCard = document.getElementById('upload-card');
+        const resultCard = document.getElementById('result-card');
+        const loadingState = document.getElementById('loading-state');
+        const scanLine = document.getElementById('scan-line');
+
+        // Elements de résultat
+        const verdictTitle = document.getElementById('verdict-title');
+        const resultBadge = document.getElementById('result-badge');
+        const scoreBar = document.getElementById('score-bar');
+        const analysisText = document.getElementById('analysis-text');
+        const adviceText = document.getElementById('advice-text');
+
+        let selectedFile = null;
+
+        // 1. Gestion de l'upload
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                selectedFile = e.target.files[0];
+                analyzeBtn.classList.remove('hidden');
+                analyzeBtn.textContent = `Analyser ${selectedFile.name.substring(0, 15)}...`;
+            }
+        });
+
+        // 2. Conversion image en Base64 pour Gemini
+        async function fileToGenerativePart(file) {
+            const base64EncodedDataPromise = new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result.split(',')[1]);
+                reader.readAsDataURL(file);
+            });
+            return {
+                inlineData: { data: await base64EncodedDataPromise, mimeType: file.type },
+            };
+        }
+
+        // 3. Lancer l'analyse
+        analyzeBtn.addEventListener('click', async () => {
+            if (!selectedFile) return;
+
+            // UI : Passage en mode loading
+            analyzeBtn.disabled = true;
+            scanLine.style.display = 'block'; // Active le laser
+            loadingState.classList.remove('hidden');
+            resultCard.classList.add('hidden');
+
+            try {
+                // Initialisation Gemini
+                const genAI = new GoogleGenerativeAI(API_KEY);
+                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+                const imagePart = await fileToGenerativePart(selectedFile);
+
+                const prompt = `
+                Tu es "Méca-Expert", une IA qui détecte les arnaques de garagiste.
+                
+                Base de prix (Pièce + Main d'oeuvre TTC) :
+                - Vidange : 70-120€
+                - Plaquettes : 100-180€
+                - Disques+Plaquettes : 250-400€
+                - Kit Distri : 450-800€
+                - Embrayage : 600-1000€
+                - Diagnostic : 40-90€
+                
+                ANALYSE L'IMAGE DU DEVIS.
+                Compare le total avec tes prix de référence.
+                Si c'est une marque de luxe (Audi, BMW, Merco), tolère +30%.
+                
+                Réponds UNIQUEMENT en JSON brut (sans markdown) avec cette structure :
+                {
+                    "score": (note sur 10, 10=Prix Top, 0=Grosse Arnaque),
+                    "status": "VERT" (Honnête) ou "ORANGE" (Cher) ou "ROUGE" (Arnaque),
+                    "verdict": "Titre court (ex: Prix Gonflé !)",
+                    "analyse": "Phrase expliquant pourquoi (ex: 600€ pour des plaquettes, c'est du vol).",
+                    "conseil": "Conseil d'expert pour négocier."
+                }
+                `;
+
+                const result = await model.generateContent([prompt, imagePart]);
+                const response = await result.response;
+                const text = response.text();
+
+                // Nettoyage du JSON (au cas où Gemini met des ```json)
+                const cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
+                const data = JSON.parse(cleanJson);
+
+                // UI : Affichage du résultat
+                displayResult(data);
+
+            } catch (error) {
+                console.error(error);
+                alert("Erreur lors de l'analyse. Vérifie ta clé API ou l'image.");
+            } finally {
+                // Stop loading
+                scanLine.style.display = 'none';
+                loadingState.classList.add('hidden');
+                analyzeBtn.disabled = false;
+            }
+        });
+
+        // 4. Fonction d'affichage
+        function displayResult(data) {
+            resultCard.classList.remove('hidden');
+            
+            // Remplissage des textes
+            verdictTitle.innerText = data.verdict;
+            analysisText.innerText = data.analyse;
+            adviceText.innerText = data.conseil;
+
+            // Gestion des couleurs
+            let colorClass = "";
+            let widthPercent = (data.score * 10) + "%"; // Score sur 10 -> %
+
+            if (data.status === "ROUGE") {
+                colorClass = "bg-red-500";
+                resultBadge.className = "px-3 py-1 rounded-full text-xs font-bold uppercase bg-red-500/20 text-red-400 border border-red-500";
+                resultBadge.innerText = "⚠️ RISQUE D'ARNAQUE";
+                verdictTitle.className = "tech-font text-3xl font-bold mb-2 text-red-500";
+            } else if (data.status === "ORANGE") {
+                colorClass = "bg-orange-500";
+                resultBadge.className = "px-3 py-1 rounded-full text-xs font-bold uppercase bg-orange-500/20 text-orange-400 border border-orange-500";
+                resultBadge.innerText = "🟠 UN PEU CHER";
+                verdictTitle.className = "tech-font text-3xl font-bold mb-2 text-orange-400";
+            } else {
+                colorClass = "bg-green-500";
+                resultBadge.className = "px-3 py-1 rounded-full text-xs font-bold uppercase bg-green-500/20 text-green-400 border border-green-500";
+                resultBadge.innerText = "✅ PRIX HONNÊTE";
+                verdictTitle.className = "tech-font text-3xl font-bold mb-2 text-green-400";
+            }
+
+            // Animation de la barre
+            scoreBar.className = `gauge-fill ${colorClass}`;
+            setTimeout(() => { scoreBar.style.width = widthPercent; }, 100);
+            
+            // Scroll vers le résultat
+            resultCard.scrollIntoView({ behavior: 'smooth' });
         }
     </script>
-
 </body>
 </html>
