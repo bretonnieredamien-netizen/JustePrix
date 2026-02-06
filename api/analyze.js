@@ -1,7 +1,7 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 
-export default async function handler(req, res) {
-    // On autorise tout le monde (CORS) pour éviter les blocages
+module.exports = async (req, res) => {
+    // 1. Gérer les permissions (CORS) pour que le site ait le droit de parler au serveur
     res.setHeader('Access-Control-Allow-Credentials', true);
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
@@ -10,32 +10,39 @@ export default async function handler(req, res) {
         'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
     );
 
-    // Si c'est une requête "OPTIONS" (vérification du navigateur), on dit OK
+    // Si le navigateur demande juste "Est-ce que je peux ?", on dit OUI.
     if (req.method === 'OPTIONS') {
         res.status(200).end();
         return;
     }
 
+    // 2. Vérifier la méthode (POST uniquement)
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method Not Allowed' });
     }
 
     try {
+        // 3. Récupérer la clé API
         const API_KEY = process.env.GEMINI_API_KEY;
         if (!API_KEY) {
-            throw new Error('Clé API manquante dans Vercel');
+            throw new Error('Clé API manquante dans les réglages Vercel');
         }
 
+        // 4. Récupérer l'image
         const { image } = req.body;
         if (!image) {
-            return res.status(400).json({ error: 'Pas d\'image reçue' });
+            return res.status(400).json({ error: 'Aucune image reçue' });
         }
 
+        // 5. Configurer Gemini
         const genAI = new GoogleGenerativeAI(API_KEY);
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-        const prompt = `Analyse ce devis garage. Donne un JSON : { "score": 5, "status": "ORANGE", "verdict": "Cher", "analyse": "...", "conseil": "..." }`;
+        const prompt = `Analyse ce devis garage.
+        Prix de ref TTC : Vidange 100€, Plaquettes 150€, Distri 600€, Diag 70€.
+        Réponds UNIQUEMENT un JSON : { "score": 5, "status": "ORANGE", "verdict": "Cher", "analyse": "...", "conseil": "..." }`;
 
+        // 6. Envoyer à l'IA
         const result = await model.generateContent([
             prompt,
             { inlineData: { data: image, mimeType: "image/jpeg" } }
@@ -43,21 +50,16 @@ export default async function handler(req, res) {
 
         const response = await result.response;
         let text = response.text();
-        
-        // Nettoyage brutal du JSON
+
+        // Nettoyage
         text = text.replace(/```json/g, '').replace(/```/g, '').trim();
         
-        // On essaie de parser
-        try {
-            const data = JSON.parse(text);
-            res.status(200).json(data);
-        } catch (e) {
-            console.error("Erreur JSON:", text);
-            res.status(500).json({ error: "L'IA a mal répondu" });
-        }
+        // 7. Renvoyer le résultat
+        const data = JSON.parse(text);
+        res.status(200).json(data);
 
     } catch (error) {
-        console.error("Erreur serveur:", error);
-        res.status(500).json({ error: error.message });
+        console.error("Erreur Backend:", error);
+        res.status(500).json({ error: error.message || 'Erreur interne' });
     }
-}
+};
