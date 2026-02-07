@@ -27,28 +27,33 @@ export default async function handler(req) {
             });
         }
 
-        // On récupère le fichier (fileData) et son type (mimeType)
         const { fileData, mimeType } = await req.json();
 
+        // --- PROMPT MIS À JOUR 2026 ---
         const prompt = `
-        Tu es un expert tarification réaliste et pragmatique (Contexte économique 2024-2025).
-        Ta mission : Analyser ce document (Devis PDF ou Image) et rassurer l'utilisateur ou l'alerter.
+        Tu es un expert tarification réaliste et pragmatique.
+        DATE ACTUELLE : 2026.
+        
+        Ta mission : Analyser ce document (Devis PDF ou Image) et juger les prix selon le marché ACTUEL (2026).
 
-        RÈGLES DE JUGEMENT :
-        1. LOCALISATION : Cherche l'adresse. Si grande ville/zone dense, tolère prix +30%.
-        2. INFLATION : Prends en compte la hausse des matériaux/main d'oeuvre.
-        3. TOLERANCE : 
-           - Prix moyen ou jusqu'à +20% : "VERT" (Correct).
-           - +30% à +50% : "ORANGE" (Un peu cher).
-           - > +60% ou incohérent : "ROUGE" (Arnaque).
+        RÈGLES DE JUGEMENT CRITIQUES :
+        1. CONTEXTE 2026 : Oublie les prix de 2024. Prends en compte l'inflation cumulée (Matériaux + Main d'oeuvre + Énergie). Ce qui était cher en 2024 est peut-être standard aujourd'hui.
+        2. LOCALISATION : Si c'est une grande ville ou zone tendue, accepte des prix +30% supérieurs à la moyenne nationale sans pénalité.
+        3. QUALITÉ vs PRIX : Ne cherche pas le prix le plus bas ("Low Cost"). Cherche le "Juste Prix" pour un travail pro.
+
+        BARÈME : 
+        - Prix dans la moyenne marché 2026 : "VERT" (Correct).
+        - Prix jusqu'à +25% au-dessus (Marge de sécurité) : "VERT" (Correct/Standard).
+        - Prix +30% à +50% : "ORANGE" (Un peu cher).
+        - Prix > +60% ou incohérent : "ROUGE" (Arnaque).
 
         FORMAT JSON :
         {
             "profession": "Métier identifié (ex: Maçon, Pisciniste, Garagiste...)",
-            "score": (Note sur 10),
+            "score": (Note sur 10. 8-10 = Prix Excellent/Correct, 5-7 = Un peu cher, 0-4 = Arnaque),
             "status": "VERT" ou "ORANGE" ou "ROUGE",
             "verdict": "Titre court",
-            "analyse": "Explication bienveillante et factuelle.",
+            "analyse": "Explication brève qui cite des références de prix 2026.",
             "conseil": "Conseil pro."
         }
         `;
@@ -62,7 +67,7 @@ export default async function handler(req) {
                         { text: prompt },
                         { 
                             inline_data: { 
-                                mime_type: mimeType, // ICI : On passe "application/pdf" ou "image/jpeg" dynamiquement
+                                mime_type: mimeType || 'image/jpeg',
                                 data: fileData 
                             } 
                         }
