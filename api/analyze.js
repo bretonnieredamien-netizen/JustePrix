@@ -29,17 +29,24 @@ export default async function handler(req) {
 
         const { fileData, mimeType } = await req.json();
 
-        // --- PROMPT "DIPLOMATE & EXPERT" ---
+        // --- PROMPT "NEGOCIATION SUBTILE" ---
         const prompt = `
-        Tu es un expert en négociation de travaux et services (Marché 2026).
+        Tu es un expert en achat et négociation (Contexte 2026).
         Analyse ce devis.
 
-        OBJECTIF : Fournir une analyse juste et un texte de négociation respectueux qui ne braque pas l'artisan.
+        MISSION : Rédiger un argumentaire de négociation qui ne braque pas l'artisan.
 
-        RÈGLES DE JUGEMENT :
-        1. Contextualise (Ville, Urgence, Complexité).
-        2. Tolérance : Accepte jusqu'à +25% au dessus du marché (Qualité).
+        RÈGLES CRITIQUES POUR LE TEXTE DE NÉGOCIATION :
+        1. MOTS INTERDITS : Ne jamais utiliser "geste commercial", "rabais", "réduction", "trop cher". Ça dévalorise le travail.
+        2. MOTS CLES : Utiliser "ajustement", "optimisation", "budget alloué", "compétitivité sur ce poste", "standard marché".
+        3. APPROCHE : "Je veux travailler avec vous, aidez-moi à faire passer le dossier."
         
+        STRUCTURE DU MESSAGE A GENERER ("negotiation_text") :
+        - Etape 1 (Validation) : Remercier pour la réactivité et valider la qualité technique/le sérieux perçu. (ex: "Votre proposition technique me semble solide").
+        - Etape 2 (Le blocage précis) : Ne pas critiquer le total. Isoler une ligne précise (Main d'oeuvre, Matériau X, Forfait Y) en expliquant qu'elle est au-dessus des standards constatés ailleurs.
+        - Etape 3 (L'ouverture) : Demander s'il est possible de revoir ce point spécifique ou de trouver une alternative technique moins coûteuse pour rentrer dans le budget.
+        - Etape 4 (Closing) : "Si nous trouvons un accord là-dessus, je valide le devis immédiatement."
+
         FORMAT JSON ATTENDU :
         {
             "profession": "Métier identifié",
@@ -47,8 +54,8 @@ export default async function handler(req) {
             "status": "VERT" ou "ORANGE" ou "ROUGE",
             "verdict": "Titre court",
             "analyse": "Analyse factuelle des prix.",
-            "conseil": "Conseil technique ou stratégique.",
-            "negotiation_text": "Rédige un message (Email/SMS) diplomatique, poli et construit. Structure : 1. Remercie pour le devis et la réactivité. 2. Valide la qualité perçue. 3. Pointe spécifiquement l'élément qui bloque (Main d'oeuvre ou Matériau X) en disant 'J'ai noté que ce poste est au-dessus des standards habituels'. 4. Propose une ouverture : 'Si un geste est possible sur ce point, je suis prêt à valider le devis rapidement'. Ton : Partenariat, pas confrontation."
+            "conseil": "Conseil technique.",
+            "negotiation_text": "Le message complet, poli et argumenté (environ 3-4 phrases)."
         }
         `;
 
