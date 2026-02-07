@@ -38,7 +38,7 @@
         <p class="text-slate-400 text-sm">Scan ton devis garage en 2 secondes.</p>
     </header>
 
-    <main class="w-full max-w-md z-10 mb-10">
+    <main class="w-full max-w-md z-10 mb-20">
         <div id="upload-card" class="bg-slate-800/80 backdrop-blur-md border border-slate-700 rounded-2xl p-6 shadow-2xl relative overflow-hidden">
             <div id="scan-line" class="scan-line z-20"></div>
             <div class="text-center space-y-6">
@@ -93,6 +93,7 @@
 
         let selectedFile = null;
 
+        // Détection TikTok
         const ua = navigator.userAgent.toLowerCase();
         if (ua.includes('tiktok') || ua.includes('instagram')) {
             document.getElementById('app-browser-alert').classList.remove('hidden');
@@ -135,7 +136,16 @@
                 
                 let text = json.candidates[0].content.parts[0].text;
                 text = text.replace(/```json/g, '').replace(/```/g, '').trim();
-                const data = JSON.parse(text);
+                
+                // Parsing sécurisé
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch (e) {
+                    // Si le JSON est mal formé, on force une erreur
+                    console.error("Erreur JSON", text);
+                    data = { status: "ROUGE", score: 0, verdict: "Erreur Analyse", analyse: "L'IA n'a pas pu lire le devis correctement.", conseil: "Réessayez avec une photo plus nette." };
+                }
 
                 displayResult(data);
 
@@ -159,31 +169,45 @@
             const bar = document.getElementById('score-bar');
             const title = document.getElementById('verdict-title');
             
-            let color = "bg-green-500";
-            let status = (data.status || "VERT").toUpperCase();
+            // --- LOGIQUE DE COULEUR RENFORCÉE ---
+            // On nettoie le status (enlève les espaces, met en majuscules)
+            let status = (data.status || "").toUpperCase().trim();
+            // On récupère le score (par défaut 5 si absent)
+            let score = typeof data.score === 'number' ? data.score : 5;
 
-            // MODIF ICI : Application des couleurs sur le TITRE aussi
-            if (status === "ROUGE") {
+            // Logique prioritaire : SI le score est bas OU si le status contient "ROUGE"
+            let isRed = status.includes("ROUGE") || score < 4;
+            let isOrange = status.includes("ORANGE") || (score >= 4 && score < 7);
+
+            let color = "bg-green-500"; // Par défaut Vert
+
+            if (isRed) {
+                // CAS ROUGE (Arnaque)
                 color = "bg-red-500";
                 badge.innerText = "⚠️ ARNAQUE";
                 badge.className = "px-3 py-1 rounded-full text-xs font-bold uppercase bg-red-500/20 text-red-400 border border-red-500";
-                title.className = "tech-font text-3xl font-bold mb-2 text-red-500"; // Titre Rouge
-            } else if (status === "ORANGE") {
+                title.className = "tech-font text-3xl font-bold mb-2 text-red-500";
+            } else if (isOrange) {
+                // CAS ORANGE (Cher)
                 color = "bg-orange-500";
                 badge.innerText = "🟠 UN PEU CHER";
                 badge.className = "px-3 py-1 rounded-full text-xs font-bold uppercase bg-orange-500/20 text-orange-400 border border-orange-500";
-                title.className = "tech-font text-3xl font-bold mb-2 text-orange-400"; // Titre Orange
+                title.className = "tech-font text-3xl font-bold mb-2 text-orange-400";
             } else {
+                // CAS VERT (Correct)
                 badge.innerText = "✅ PRIX CORRECT";
                 badge.className = "px-3 py-1 rounded-full text-xs font-bold uppercase bg-green-500/20 text-green-400 border border-green-500";
-                title.className = "tech-font text-3xl font-bold mb-2 text-green-400"; // Titre Vert
+                title.className = "tech-font text-3xl font-bold mb-2 text-green-400";
             }
 
             bar.className = `gauge-fill ${color} h-full`;
-            setTimeout(() => { bar.style.width = (data.score * 10) + "%"; }, 100);
+            // Animation de la barre
+            setTimeout(() => { bar.style.width = (score * 10) + "%"; }, 100);
             
-            // MODIF ICI : Scroll automatique vers le résultat pour être sûr qu'il est visible
-            resultCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            // Scroll automatique vers le résultat
+            setTimeout(() => {
+                resultCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
         }
     </script>
 </body>
