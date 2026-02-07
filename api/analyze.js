@@ -29,32 +29,28 @@ export default async function handler(req) {
 
         const { fileData, mimeType } = await req.json();
 
-        // --- PROMPT MIS À JOUR 2026 ---
+        // --- PROMPT AVEC KIT DE NEGOCIATION ---
         const prompt = `
-        Tu es un expert tarification réaliste et pragmatique.
-        DATE ACTUELLE : 2026.
-        
-        Ta mission : Analyser ce document (Devis PDF ou Image) et juger les prix selon le marché ACTUEL (2026).
+        Tu es un expert tarification réaliste (Marché 2026).
+        Analyse ce devis (Image ou PDF).
 
-        RÈGLES DE JUGEMENT CRITIQUES :
-        1. CONTEXTE 2026 : Oublie les prix de 2024. Prends en compte l'inflation cumulée (Matériaux + Main d'oeuvre + Énergie). Ce qui était cher en 2024 est peut-être standard aujourd'hui.
-        2. LOCALISATION : Si c'est une grande ville ou zone tendue, accepte des prix +30% supérieurs à la moyenne nationale sans pénalité.
-        3. QUALITÉ vs PRIX : Ne cherche pas le prix le plus bas ("Low Cost"). Cherche le "Juste Prix" pour un travail pro.
-
-        BARÈME : 
-        - Prix dans la moyenne marché 2026 : "VERT" (Correct).
-        - Prix jusqu'à +25% au-dessus (Marge de sécurité) : "VERT" (Correct/Standard).
-        - Prix +30% à +50% : "ORANGE" (Un peu cher).
-        - Prix > +60% ou incohérent : "ROUGE" (Arnaque).
+        RÈGLES :
+        1. CONTEXTE 2026 : Prends en compte l'inflation.
+        2. LOCALISATION : Tolère +30% pour les grandes villes.
+        3. BARÈME :
+           - Prix moyen à +25% : "VERT".
+           - +30% à +50% : "ORANGE".
+           - > +60% ou incohérent : "ROUGE".
 
         FORMAT JSON :
         {
-            "profession": "Métier identifié (ex: Maçon, Pisciniste, Garagiste...)",
-            "score": (Note sur 10. 8-10 = Prix Excellent/Correct, 5-7 = Un peu cher, 0-4 = Arnaque),
+            "profession": "Métier identifié",
+            "score": (Note sur 10),
             "status": "VERT" ou "ORANGE" ou "ROUGE",
-            "verdict": "Titre court",
-            "analyse": "Explication brève qui cite des références de prix 2026.",
-            "conseil": "Conseil pro."
+            "verdict": "Titre court (ex: Main d'oeuvre abusive)",
+            "analyse": "Explication factuelle.",
+            "conseil": "Conseil pro.",
+            "negotiation_text": "Un texte court (SMS style) que le client peut copier pour négocier avec le pro. (ex: 'Bonjour, j'ai comparé votre devis, le poste X me semble 30% au dessus du marché...')"
         }
         `;
 
