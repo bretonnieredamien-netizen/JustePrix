@@ -3,75 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JustePrix Auto - Détecteur d'Arnaques</title>
-    
+    <title>JustePrix Auto - Détecteur</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #0b1120; color: white; }
         .tech-font { font-family: 'Orbitron', sans-serif; }
-        
         .scan-line {
             position: absolute; top: 0; left: 0; width: 100%; height: 4px;
             background: #00ffcc; box-shadow: 0 0 15px #00ffcc;
             animation: scan 2s infinite linear; display: none;
         }
         @keyframes scan { 0% { top: 0; } 50% { top: 100%; } 100% { top: 0; } }
-
-        .gauge-container {
-            width: 100%; height: 20px; background: #1e293b;
-            border-radius: 10px; overflow: hidden; margin-top: 10px;
-        }
-        .gauge-fill {
-            height: 100%; width: 0%; transition: width 1s ease-out, background-color 0.5s;
-        }
-        /* Animation bandeau alert */
-        @keyframes slideDown { from { transform: translateY(-100%); } to { transform: translateY(0); } }
+        .gauge-fill { transition: width 1s ease-out, background-color 0.5s; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden">
 
-    <div id="app-browser-alert" class="hidden fixed top-0 left-0 right-0 bg-indigo-600 text-white z-[9999] shadow-2xl animate-[slideDown_0.5s_ease-out]">
-        <div class="container mx-auto px-4 py-3 text-center text-sm">
-            ⚠️ Navigateur TikTok détecté. Pour scanner, ouvrez ce site sur <strong>Chrome</strong> ou <strong>Safari</strong>.
+    <div class="absolute inset-0 z-0 opacity-20" style="background-image: radial-gradient(#1e40af 1px, transparent 1px); background-size: 30px 30px;"></div>
+
+    <div id="api-key-modal" class="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-800 p-6 rounded-xl border border-slate-600 max-w-sm w-full text-center">
+            <i class="fa-solid fa-key text-3xl text-yellow-400 mb-4"></i>
+            <h2 class="text-xl font-bold mb-2">Activation Requise</h2>
+            <p class="text-sm text-slate-400 mb-4">Pour que l'app fonctionne sans serveur, entre ta clé Gemini API (commence par AIza...).</p>
+            <input type="password" id="api-key-input" placeholder="Colle ta clé API ici" class="w-full bg-slate-900 border border-slate-700 rounded p-3 text-white mb-4 focus:border-cyan-400 outline-none">
+            <button id="save-key-btn" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2 rounded transition">ACTIVER L'APP</button>
+            <p class="text-xs text-slate-500 mt-2">La clé est sauvegardée sur VOTRE appareil uniquement.</p>
         </div>
     </div>
-
-    <div class="absolute inset-0 z-0 opacity-20" style="background-image: radial-gradient(#1e40af 1px, transparent 1px); background-size: 30px 30px;"></div>
 
     <header class="text-center z-10 mb-8 pt-10">
         <div class="inline-flex items-center gap-2 border border-blue-500/50 bg-blue-900/20 px-4 py-1 rounded-full text-blue-300 text-xs mb-4">
             <i class="fa-solid fa-shield-halved"></i> IA Anti-Arnaque v1.0
         </div>
-        <h1 class="tech-font text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 mb-2">
-            JustePrix
-        </h1>
-        <p class="text-slate-400 text-sm max-w-xs mx-auto">
-            Scan ton devis garage. L'IA analyse les prix et détecte les abus.
-        </p>
+        <h1 class="tech-font text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 mb-2">JustePrix</h1>
     </header>
 
+    <div id="error-box" class="hidden w-full max-w-md bg-red-900/80 border border-red-500 text-white p-4 rounded-lg mb-6 z-20 text-center">
+        <p class="font-bold"><i class="fa-solid fa-triangle-exclamation"></i> ERREUR :</p>
+        <p id="error-message" class="text-sm font-mono mt-1">...</p>
+        <button onclick="localStorage.removeItem('gemini_key'); location.reload();" class="text-xs underline mt-2 text-red-300">Réinitialiser la clé API</button>
+    </div>
+
     <main class="w-full max-w-md z-10">
-        
         <div id="upload-card" class="bg-slate-800/80 backdrop-blur-md border border-slate-700 rounded-2xl p-6 shadow-2xl relative overflow-hidden">
             <div id="scan-line" class="scan-line z-20"></div>
-
             <div class="text-center space-y-6">
                 <label for="file-upload" class="cursor-pointer block border-2 border-dashed border-slate-600 hover:border-cyan-400 hover:bg-slate-700/50 rounded-xl p-8 transition group">
                     <div class="w-16 h-16 bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition">
                         <i class="fa-solid fa-camera text-2xl text-cyan-400"></i>
                     </div>
                     <h3 class="text-lg font-bold text-white mb-1">Photo du devis</h3>
-                    <p class="text-xs text-slate-400">Cliquez ici pour importer</p>
+                    <p class="text-xs text-slate-400">Cliquez pour importer</p>
                     <input id="file-upload" type="file" class="hidden" accept="image/*">
                 </label>
-
-                <button id="analyze-btn" class="w-full py-4 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 rounded-xl font-bold text-white shadow-lg shadow-cyan-500/20 transition disabled:opacity-50 disabled:cursor-not-allowed hidden">
-                    LANCER L'ANALYSE
-                </button>
+                <button id="analyze-btn" class="hidden w-full py-4 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 rounded-xl font-bold text-white shadow-lg transition">LANCER L'ANALYSE</button>
             </div>
         </div>
 
@@ -87,91 +75,96 @@
                 <span class="text-slate-400 text-xs uppercase tracking-wider">Diagnostic</span>
                 <span id="result-badge" class="px-3 py-1 rounded-full text-xs font-bold uppercase bg-gray-700 text-white">...</span>
             </div>
-
             <div class="mb-6 text-center">
                 <h2 id="verdict-title" class="tech-font text-3xl font-bold mb-2">...</h2>
-                <div class="gauge-container">
-                    <div id="score-bar" class="gauge-fill bg-green-500"></div>
+                <div class="w-full h-4 bg-slate-700 rounded-full overflow-hidden mt-2">
+                    <div id="score-bar" class="gauge-fill bg-green-500 h-full w-0"></div>
                 </div>
             </div>
-
             <div class="bg-slate-900/50 rounded-lg p-4 mb-4 border-l-4 border-cyan-500">
                 <p id="analysis-text" class="text-sm text-slate-300 leading-relaxed">...</p>
             </div>
-
             <div class="flex gap-3 items-start bg-blue-900/20 p-3 rounded-lg">
                 <i class="fa-solid fa-lightbulb text-yellow-400 mt-1"></i>
                 <p id="advice-text" class="text-xs text-blue-200 italic">...</p>
             </div>
-
-            <button onclick="location.reload()" class="w-full mt-6 py-3 border border-slate-600 hover:bg-slate-700 rounded-xl text-sm font-semibold transition">
-                Scanner un autre
-            </button>
+            <button onclick="location.reload()" class="w-full mt-6 py-3 border border-slate-600 hover:bg-slate-700 rounded-xl text-sm font-semibold transition">Scanner un autre</button>
         </div>
     </main>
 
     <script>
-        // 👇👇 REMPLACE TA CLÉ API JUSTE ICI 👇👇
-        const API_KEY = "AIzaSyB8E_BWHW0Gp9w7D1LM3Csj3t4CGQuB5Xg"; 
-        // 👆👆 ----------------------------- 👆👆
+        // --- 1. GESTION DE LA CLE API (Local Storage) ---
+        const modal = document.getElementById('api-key-modal');
+        const keyInput = document.getElementById('api-key-input');
+        const saveKeyBtn = document.getElementById('save-key-btn');
+        let API_KEY = localStorage.getItem('gemini_key');
 
+        if (API_KEY) {
+            modal.classList.add('hidden'); // Clé déjà là -> On cache la fenêtre
+        }
+
+        saveKeyBtn.addEventListener('click', () => {
+            const val = keyInput.value.trim();
+            if (val.startsWith('AIza') && val.length > 20) {
+                localStorage.setItem('gemini_key', val);
+                API_KEY = val;
+                modal.classList.add('hidden');
+            } else {
+                alert("Clé invalide. Elle doit commencer par 'AIza'.");
+            }
+        });
+
+        // --- 2. LOGIQUE DE L'APP ---
         const fileInput = document.getElementById('file-upload');
         const analyzeBtn = document.getElementById('analyze-btn');
         const uploadCard = document.getElementById('upload-card');
         const resultCard = document.getElementById('result-card');
         const loadingState = document.getElementById('loading-state');
         const scanLine = document.getElementById('scan-line');
-        const verdictTitle = document.getElementById('verdict-title');
-        const resultBadge = document.getElementById('result-badge');
-        const scoreBar = document.getElementById('score-bar');
-        const analysisText = document.getElementById('analysis-text');
-        const adviceText = document.getElementById('advice-text');
+        const errorBox = document.getElementById('error-box');
+        const errorMessage = document.getElementById('error-message');
 
         let selectedFile = null;
-
-        // Détection TikTok pour éviter les bugs caméra
-        const ua = navigator.userAgent.toLowerCase();
-        if (ua.includes('tiktok') || ua.includes('instagram')) {
-            document.getElementById('app-browser-alert').classList.remove('hidden');
-        }
 
         fileInput.addEventListener('change', (e) => {
             if (e.target.files.length > 0) {
                 selectedFile = e.target.files[0];
                 analyzeBtn.classList.remove('hidden');
                 analyzeBtn.textContent = `Analyser le devis`;
+                errorBox.classList.add('hidden'); // Cacher les erreurs précédentes
             }
         });
 
-        // Fonction pour convertir en Base64 proprement
-        const fileToBase64 = (file) => new Promise((resolve) => {
+        // Conversion image -> Base64
+        const fileToBase64 = (file) => new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.readAsDataURL(file);
             reader.onload = () => resolve(reader.result.split(',')[1]);
+            reader.onerror = error => reject(error);
         });
 
         analyzeBtn.addEventListener('click', async () => {
-            if (!selectedFile) return;
-            if (API_KEY.includes("TA_CLE")) { alert("Erreur: Clé API manquante !"); return; }
-
-            // Loading
+            if (!API_KEY) { location.reload(); return; }
+            
+            // UI Update
             analyzeBtn.disabled = true;
             scanLine.style.display = 'block';
             loadingState.classList.remove('hidden');
             resultCard.classList.add('hidden');
+            errorBox.classList.add('hidden');
 
             try {
                 const base64Image = await fileToBase64(selectedFile);
 
-                // --- REQUÊTE DIRECTE SANS LIBRAIRIE (INDESTRUCTIBLE) ---
+                // --- APPEL API DIRECT (Sans librairie pour éviter les bugs) ---
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         contents: [{
                             parts: [
-                                { text: `Tu es expert auto. Analyse ce devis. 
-                                Prix Ref: Vidange 100€, Freins 150€, Distri 600€, Diag 70€. Si Luxe +30%.
+                                { text: `Tu es expert auto. Analyse ce devis.
+                                Prix Ref TTC : Vidange 100€, Freins 150€, Distri 600€, Diag 70€. Si Luxe +30%.
                                 Réponds UNIQUEMENT ce JSON : {"score": 5, "status": "ORANGE", "verdict": "Cher", "analyse": "...", "conseil": "..."}` },
                                 { inline_data: { mime_type: selectedFile.type, data: base64Image } }
                             ]
@@ -179,11 +172,15 @@
                     })
                 });
 
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error.message || `Erreur serveur : ${response.status}`);
+                }
+
                 const json = await response.json();
                 
-                // Extraction du texte de la réponse Google
+                // Extraction & Nettoyage
                 let text = json.candidates[0].content.parts[0].text;
-                // Nettoyage
                 text = text.replace(/```json/g, '').replace(/```/g, '').trim();
                 const data = JSON.parse(text);
 
@@ -191,42 +188,49 @@
 
             } catch (error) {
                 console.error(error);
-                alert("Erreur d'analyse. Vérifiez votre connexion.");
+                // AFFICHER L'ERREUR A L'ECRAN POUR LE DIAGNOSTIC
+                loadingState.classList.add('hidden');
+                scanLine.style.display = 'none';
+                analyzeBtn.disabled = false;
+                errorBox.classList.remove('hidden');
+                errorMessage.innerText = error.message;
             } finally {
                 scanLine.style.display = 'none';
                 loadingState.classList.add('hidden');
-                analyzeBtn.disabled = false;
             }
         });
 
         function displayResult(data) {
             resultCard.classList.remove('hidden');
-            verdictTitle.innerText = data.verdict;
-            analysisText.innerText = data.analyse;
-            adviceText.innerText = data.conseil;
+            document.getElementById('verdict-title').innerText = data.verdict;
+            document.getElementById('analysis-text').innerText = data.analyse;
+            document.getElementById('advice-text').innerText = data.conseil;
 
-            let colorClass = "";
-            let widthPercent = (data.score * 10) + "%";
+            const badge = document.getElementById('result-badge');
+            const bar = document.getElementById('score-bar');
+            const title = document.getElementById('verdict-title');
+            
+            let color = "bg-green-500";
+            let status = (data.status || "VERT").toUpperCase();
 
-            if (data.status === "ROUGE") {
-                colorClass = "bg-red-500";
-                resultBadge.className = "px-3 py-1 rounded-full text-xs font-bold uppercase bg-red-500/20 text-red-400 border border-red-500";
-                resultBadge.innerText = "⚠️ ARNAQUE";
-                verdictTitle.className = "tech-font text-3xl font-bold mb-2 text-red-500";
-            } else if (data.status === "ORANGE") {
-                colorClass = "bg-orange-500";
-                resultBadge.className = "px-3 py-1 rounded-full text-xs font-bold uppercase bg-orange-500/20 text-orange-400 border border-orange-500";
-                resultBadge.innerText = "🟠 UN PEU CHER";
-                verdictTitle.className = "tech-font text-3xl font-bold mb-2 text-orange-400";
+            if (status === "ROUGE") {
+                color = "bg-red-500";
+                badge.innerText = "⚠️ ARNAQUE";
+                badge.className = "px-3 py-1 rounded-full text-xs font-bold uppercase bg-red-500/20 text-red-400 border border-red-500";
+                title.className = "tech-font text-3xl font-bold mb-2 text-red-500";
+            } else if (status === "ORANGE") {
+                color = "bg-orange-500";
+                badge.innerText = "🟠 UN PEU CHER";
+                badge.className = "px-3 py-1 rounded-full text-xs font-bold uppercase bg-orange-500/20 text-orange-400 border border-orange-500";
+                title.className = "tech-font text-3xl font-bold mb-2 text-orange-400";
             } else {
-                colorClass = "bg-green-500";
-                resultBadge.className = "px-3 py-1 rounded-full text-xs font-bold uppercase bg-green-500/20 text-green-400 border border-green-500";
-                resultBadge.innerText = "✅ PRIX CORRECT";
-                verdictTitle.className = "tech-font text-3xl font-bold mb-2 text-green-400";
+                badge.innerText = "✅ PRIX CORRECT";
+                badge.className = "px-3 py-1 rounded-full text-xs font-bold uppercase bg-green-500/20 text-green-400 border border-green-500";
+                title.className = "tech-font text-3xl font-bold mb-2 text-green-400";
             }
 
-            scoreBar.className = `gauge-fill ${colorClass}`;
-            setTimeout(() => { scoreBar.style.width = widthPercent; }, 100);
+            bar.className = `gauge-fill ${color} h-full`;
+            setTimeout(() => { bar.style.width = (data.score * 10) + "%"; }, 100);
             resultCard.scrollIntoView({ behavior: 'smooth' });
         }
     </script>
