@@ -3,6 +3,7 @@ export const config = {
 };
 
 export default async function handler(req) {
+    // Gestion des autorisations (CORS)
     if (req.method === 'OPTIONS') {
         return new Response(null, {
             status: 200,
@@ -29,21 +30,27 @@ export default async function handler(req) {
 
         const { image } = await req.json();
 
-        // --- LE SECRET EST ICI : PROMPT UNIVERSEL ---
+        // --- NOUVEAU PROMPT "REALISTE" ---
         const prompt = `
-        Tu es un expert universel en tarification (Bâtiment, Auto, Santé, Services).
-        1. IDENTIFIE le type de devis (ex: Plomberie, Paysagiste, Dentiste, Garage, Rénovation Toiture...).
-        2. ANALYSE les prix par rapport au marché français actuel.
-        3. VERDICT : Est-ce honnête ou abusif ?
+        Tu es un expert tarification réaliste et pragmatique (Contexte économique 2024-2025).
+        Ta mission : Analyser ce devis (Bâtiment, Auto, Santé, Services, etc.) et rassurer l'utilisateur ou l'alerter.
 
-        Réponds UNIQUEMENT ce JSON brut :
+        RÈGLES DE JUGEMENT (TRES IMPORTANT) :
+        1. LOCALISATION : Cherche l'adresse sur le devis. Si c'est une grande ville (Paris, Lyon, etc.) ou une zone dense, tolère automatiquement des prix +30% plus élevés.
+        2. INFLATION : Prends en compte la hausse récente des matières premières et main d'oeuvre. Ne te base pas sur des prix datés.
+        3. TOLERANCE : 
+           - Si le prix est dans la moyenne ou jusqu'à +20% au-dessus : C'est "VERT" (Correct/Standard). La qualité se paie.
+           - Si le prix est +30% à +50% au-dessus : C'est "ORANGE" (Un peu cher).
+           - Si le prix dépasse +60% ou contient des incohérences flagrantes : C'est "ROUGE" (Arnaque).
+
+        FORMAT DE REPONSE ATTENDU (JSON BRUT) :
         {
-            "profession": "Le métier identifié (ex: Plombier)",
-            "score": (Note sur 10. 10=Prix Excellent, 0=Grosse Arnaque),
-            "status": "VERT" (Honnête) ou "ORANGE" (Cher) ou "ROUGE" (Arnaque),
-            "verdict": "Titre court (ex: Main d'oeuvre abusive !)",
-            "analyse": "Explication claire en 2 phrases sur les prix constatés.",
-            "conseil": "Conseil d'expert pour négocier ou valider."
+            "profession": "Le métier identifié (ex: Couvreur, Garagiste, Dentiste...)",
+            "score": (Note sur 10. 8-10 = Prix Excellent/Correct, 5-7 = Un peu cher, 0-4 = Arnaque),
+            "status": "VERT" (si note >= 7) ou "ORANGE" (si note entre 4 et 6) ou "ROUGE" (si note < 4),
+            "verdict": "Titre court et rassurant si vert (ex: Prix Cohérent)",
+            "analyse": "Explication bienveillante. Si c'est un peu cher, explique que c'est peut-être dû à la qualité ou la région.",
+            "conseil": "Conseil pro (ex: Vérifiez juste les délais, sinon foncez)."
         }
         `;
 
