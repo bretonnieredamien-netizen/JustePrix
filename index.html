@@ -43,12 +43,13 @@
             <div id="scan-line" class="scan-line z-20"></div>
             <div class="text-center space-y-6">
                 <label for="file-upload" class="cursor-pointer block border-2 border-dashed border-slate-600 hover:border-cyan-400 hover:bg-slate-700/50 rounded-xl p-8 transition group">
-                    <div class="w-16 h-16 bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition">
-                        <i class="fa-solid fa-file-invoice-dollar text-3xl text-cyan-400"></i>
+                    <div id="upload-icon-container" class="w-16 h-16 bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition">
+                        <i class="fa-solid fa-cloud-arrow-up text-3xl text-cyan-400"></i>
                     </div>
-                    <h3 class="text-lg font-bold text-white mb-1">Scanner un devis</h3>
-                    <p class="text-xs text-slate-400">Prenez une photo nette</p>
-                    <input id="file-upload" type="file" class="hidden" accept="image/*">
+                    <h3 id="upload-text" class="text-lg font-bold text-white mb-1">Scanner un devis</h3>
+                    <p class="text-xs text-slate-400">Photo ou PDF acceptés</p>
+                    
+                    <input id="file-upload" type="file" class="hidden" accept="image/*,application/pdf">
                 </label>
                 <button id="analyze-btn" class="hidden w-full py-4 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 rounded-xl font-bold text-white shadow-lg transition">LANCER L'ANALYSE</button>
             </div>
@@ -57,7 +58,7 @@
         <div id="loading-state" class="hidden text-center mt-8">
             <div class="flex justify-center items-center gap-3 mb-4">
                 <i class="fa-solid fa-robot fa-bounce text-3xl text-cyan-400"></i>
-                <span class="text-cyan-400 font-mono text-lg animate-pulse">Identification du devis...</span>
+                <span class="text-cyan-400 font-mono text-lg animate-pulse">Lecture du document...</span>
             </div>
         </div>
 
@@ -102,26 +103,37 @@
         const alternativeSection = document.getElementById('alternative-section');
         const findProBtn = document.getElementById('find-pro-btn');
         const detectedProfessionText = document.getElementById('detected-profession');
+        const uploadIconContainer = document.getElementById('upload-icon-container');
+        const uploadText = document.getElementById('upload-text');
 
         let selectedFile = null;
-        let currentProfession = "Professionnel"; // Valeur par défaut
+        let currentProfession = "Professionnel";
 
         const ua = navigator.userAgent.toLowerCase();
         if (ua.includes('tiktok') || ua.includes('instagram')) {
             document.getElementById('app-browser-alert').classList.remove('hidden');
         }
 
+        // Gestion de l'affichage du fichier sélectionné
         fileInput.addEventListener('change', (e) => {
             if (e.target.files.length > 0) {
                 selectedFile = e.target.files[0];
                 analyzeBtn.classList.remove('hidden');
+                
+                // Changement d'icône si PDF
+                if (selectedFile.type === 'application/pdf') {
+                    uploadIconContainer.innerHTML = '<i class="fa-solid fa-file-pdf text-3xl text-red-500"></i>';
+                    uploadText.innerText = "PDF : " + selectedFile.name.substring(0, 15) + "...";
+                } else {
+                    uploadIconContainer.innerHTML = '<i class="fa-solid fa-image text-3xl text-green-400"></i>';
+                    uploadText.innerText = "Image : " + selectedFile.name.substring(0, 15) + "...";
+                }
+
                 analyzeBtn.textContent = `Analyser ce devis`;
             }
         });
 
-        // --- GPS INTELLIGENT ---
         findProBtn.addEventListener('click', () => {
-            // On utilise la profession détectée par l'IA
             const searchText = `${currentProfession} bien noté`;
             const mapsUrl = `https://www.google.com/maps/search/${encodeURIComponent(searchText)}/`;
 
@@ -142,6 +154,7 @@
             }
         });
 
+        // Conversion Fichier -> Base64
         const fileToBase64 = (file) => new Promise((resolve) => {
             const reader = new FileReader();
             reader.readAsDataURL(file);
@@ -156,12 +169,15 @@
             alternativeSection.classList.add('hidden');
 
             try {
-                const base64Image = await fileToBase64(selectedFile);
+                const base64Data = await fileToBase64(selectedFile);
 
                 const response = await fetch('/api/analyze', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ image: base64Image })
+                    body: JSON.stringify({ 
+                        fileData: base64Data,  // On envoie les données
+                        mimeType: selectedFile.type // ET le type de fichier (pdf ou jpeg)
+                    })
                 });
 
                 if (!response.ok) throw new Error(`Erreur serveur`);
@@ -195,7 +211,6 @@
             document.getElementById('analysis-text').innerText = data.analyse;
             document.getElementById('advice-text').innerText = data.conseil;
 
-            // Mise à jour de la profession détectée
             currentProfession = data.profession || "Professionnel";
             detectedProfessionText.innerText = `Détecté : ${currentProfession}`;
             findProBtn.innerHTML = `<i class="fa-solid fa-magnifying-glass-location"></i> Trouver un ${currentProfession} honnête`;
