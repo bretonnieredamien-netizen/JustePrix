@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JustePrix Auto - Détecteur</title>
+    <title>JustePrix - Vérificateur de Devis</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -24,7 +24,7 @@
 
     <div id="app-browser-alert" class="hidden fixed top-0 left-0 right-0 bg-indigo-600 text-white z-[9999] shadow-2xl animate-[slideDown_0.5s_ease-out]">
         <div class="container mx-auto px-4 py-3 text-center text-sm">
-            ⚠️ Navigateur TikTok détecté. Ouvrez sur <strong>Chrome</strong> ou <strong>Safari</strong> pour que la caméra marche.
+            ⚠️ Navigateur TikTok détecté. Ouvrez sur <strong>Chrome</strong> ou <strong>Safari</strong>.
         </div>
     </div>
 
@@ -32,10 +32,10 @@
 
     <header class="text-center z-10 mb-8 pt-10">
         <div class="inline-flex items-center gap-2 border border-blue-500/50 bg-blue-900/20 px-4 py-1 rounded-full text-blue-300 text-xs mb-4">
-            <i class="fa-solid fa-shield-halved"></i> IA Anti-Arnaque
+            <i class="fa-solid fa-scale-balanced"></i> IA Anti-Arnaque
         </div>
         <h1 class="tech-font text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 mb-2">JustePrix</h1>
-        <p class="text-slate-400 text-sm">Scan ton devis garage en 2 secondes.</p>
+        <p class="text-slate-400 text-sm">Auto • Travaux • Santé • Jardin</p>
     </header>
 
     <main class="w-full max-w-md z-10 mb-20">
@@ -44,10 +44,10 @@
             <div class="text-center space-y-6">
                 <label for="file-upload" class="cursor-pointer block border-2 border-dashed border-slate-600 hover:border-cyan-400 hover:bg-slate-700/50 rounded-xl p-8 transition group">
                     <div class="w-16 h-16 bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition">
-                        <i class="fa-solid fa-camera text-2xl text-cyan-400"></i>
+                        <i class="fa-solid fa-file-invoice-dollar text-3xl text-cyan-400"></i>
                     </div>
-                    <h3 class="text-lg font-bold text-white mb-1">Photo du devis</h3>
-                    <p class="text-xs text-slate-400">Cliquez pour importer</p>
+                    <h3 class="text-lg font-bold text-white mb-1">Scanner un devis</h3>
+                    <p class="text-xs text-slate-400">Prenez une photo nette</p>
                     <input id="file-upload" type="file" class="hidden" accept="image/*">
                 </label>
                 <button id="analyze-btn" class="hidden w-full py-4 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 rounded-xl font-bold text-white shadow-lg transition">LANCER L'ANALYSE</button>
@@ -56,14 +56,14 @@
 
         <div id="loading-state" class="hidden text-center mt-8">
             <div class="flex justify-center items-center gap-3 mb-4">
-                <i class="fa-solid fa-gear fa-spin text-3xl text-cyan-400"></i>
-                <span class="text-cyan-400 font-mono text-lg animate-pulse">Analyse des prix...</span>
+                <i class="fa-solid fa-robot fa-bounce text-3xl text-cyan-400"></i>
+                <span class="text-cyan-400 font-mono text-lg animate-pulse">Identification du devis...</span>
             </div>
         </div>
 
         <div id="result-card" class="hidden bg-slate-800/90 backdrop-blur-xl border border-slate-700 rounded-2xl p-6 shadow-2xl mt-6">
             <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-4">
-                <span class="text-slate-400 text-xs uppercase tracking-wider">Diagnostic</span>
+                <span class="text-slate-400 text-xs uppercase tracking-wider">Verdict IA</span>
                 <span id="result-badge" class="px-3 py-1 rounded-full text-xs font-bold uppercase bg-gray-700 text-white">...</span>
             </div>
             <div class="mb-6 text-center">
@@ -71,6 +71,7 @@
                 <div class="w-full h-4 bg-slate-700 rounded-full overflow-hidden mt-2">
                     <div id="score-bar" class="gauge-fill bg-green-500 h-full w-0"></div>
                 </div>
+                <p id="detected-profession" class="text-xs text-slate-500 mt-2 font-mono">Détecté : ...</p>
             </div>
             <div class="bg-slate-900/50 rounded-lg p-4 mb-4 border-l-4 border-cyan-500">
                 <p id="analysis-text" class="text-sm text-slate-300 leading-relaxed">...</p>
@@ -80,10 +81,10 @@
                 <p id="advice-text" class="text-xs text-blue-200 italic">...</p>
             </div>
 
-            <div id="alternative-garage-section" class="hidden mt-6 pt-4 border-t border-slate-700">
+            <div id="alternative-section" class="hidden mt-6 pt-4 border-t border-slate-700">
                 <p class="text-center text-xs text-slate-400 mb-3">Ne vous faites pas avoir 👇</p>
-                <button id="find-garage-btn" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl text-white font-bold shadow-lg flex items-center justify-center gap-2 transition">
-                    <i class="fa-solid fa-location-dot"></i> Trouver un meilleur garage
+                <button id="find-pro-btn" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl text-white font-bold shadow-lg flex items-center justify-center gap-2 transition">
+                    <i class="fa-solid fa-magnifying-glass-location"></i> Trouver un pro honnête
                 </button>
             </div>
 
@@ -98,10 +99,12 @@
         const resultCard = document.getElementById('result-card');
         const loadingState = document.getElementById('loading-state');
         const scanLine = document.getElementById('scan-line');
-        const alternativeSection = document.getElementById('alternative-garage-section');
-        const findGarageBtn = document.getElementById('find-garage-btn');
+        const alternativeSection = document.getElementById('alternative-section');
+        const findProBtn = document.getElementById('find-pro-btn');
+        const detectedProfessionText = document.getElementById('detected-profession');
 
         let selectedFile = null;
+        let currentProfession = "Professionnel"; // Valeur par défaut
 
         const ua = navigator.userAgent.toLowerCase();
         if (ua.includes('tiktok') || ua.includes('instagram')) {
@@ -112,32 +115,30 @@
             if (e.target.files.length > 0) {
                 selectedFile = e.target.files[0];
                 analyzeBtn.classList.remove('hidden');
-                analyzeBtn.textContent = `Analyser le devis`;
+                analyzeBtn.textContent = `Analyser ce devis`;
             }
         });
 
-        // --- NOUVELLE FONCTION GPS ---
-        findGarageBtn.addEventListener('click', () => {
-            const searchText = "Garage automobile bien noté";
-            
+        // --- GPS INTELLIGENT ---
+        findProBtn.addEventListener('click', () => {
+            // On utilise la profession détectée par l'IA
+            const searchText = `${currentProfession} bien noté`;
+            const mapsUrl = `https://www.google.com/maps/search/${encodeURIComponent(searchText)}/`;
+
             if (navigator.geolocation) {
-                findGarageBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Localisation...';
+                findProBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Localisation...';
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
-                        const lat = position.coords.latitude;
-                        const lng = position.coords.longitude;
-                        // Ouvre Maps avec la recherche centrée sur l'utilisateur
-                        window.open(`https://www.google.com/maps/search/${searchText}/@${lat},${lng},14z`, '_blank');
-                        findGarageBtn.innerHTML = '<i class="fa-solid fa-location-dot"></i> Trouver un meilleur garage';
+                        window.open(mapsUrl, '_blank');
+                        findProBtn.innerHTML = '<i class="fa-solid fa-magnifying-glass-location"></i> Trouver un pro honnête';
                     },
-                    (error) => {
-                        // Si l'utilisateur refuse le GPS, recherche générique
-                        window.open(`https://www.google.com/maps/search/${searchText}+autour+de+moi`, '_blank');
-                        findGarageBtn.innerHTML = '<i class="fa-solid fa-location-dot"></i> Trouver un meilleur garage';
+                    () => {
+                        window.open(mapsUrl, '_blank');
+                        findProBtn.innerHTML = '<i class="fa-solid fa-magnifying-glass-location"></i> Trouver un pro honnête';
                     }
                 );
             } else {
-                window.open(`https://www.google.com/maps/search/${searchText}+autour+de+moi`, '_blank');
+                window.open(mapsUrl, '_blank');
             }
         });
 
@@ -152,7 +153,7 @@
             scanLine.style.display = 'block';
             loadingState.classList.remove('hidden');
             resultCard.classList.add('hidden');
-            alternativeSection.classList.add('hidden'); // Cacher le bouton au début
+            alternativeSection.classList.add('hidden');
 
             try {
                 const base64Image = await fileToBase64(selectedFile);
@@ -163,7 +164,7 @@
                     body: JSON.stringify({ image: base64Image })
                 });
 
-                if (!response.ok) throw new Error(`Erreur serveur : ${response.status}`);
+                if (!response.ok) throw new Error(`Erreur serveur`);
 
                 const json = await response.json();
                 let text = json.candidates[0].content.parts[0].text;
@@ -173,7 +174,7 @@
                 try {
                     data = JSON.parse(text);
                 } catch (e) {
-                    data = { status: "ROUGE", score: 0, verdict: "Erreur Analyse", analyse: "Impossible de lire le devis.", conseil: "Réessayez." };
+                    data = { status: "ROUGE", score: 0, verdict: "Erreur", analyse: "Impossible de lire le document.", conseil: "Réessayez." };
                 }
 
                 displayResult(data);
@@ -194,13 +195,17 @@
             document.getElementById('analysis-text').innerText = data.analyse;
             document.getElementById('advice-text').innerText = data.conseil;
 
+            // Mise à jour de la profession détectée
+            currentProfession = data.profession || "Professionnel";
+            detectedProfessionText.innerText = `Détecté : ${currentProfession}`;
+            findProBtn.innerHTML = `<i class="fa-solid fa-magnifying-glass-location"></i> Trouver un ${currentProfession} honnête`;
+
             const badge = document.getElementById('result-badge');
             const bar = document.getElementById('score-bar');
             const title = document.getElementById('verdict-title');
             
             let status = (data.status || "").toUpperCase().trim();
             let score = typeof data.score === 'number' ? data.score : 5;
-
             let isRed = status.includes("ROUGE") || score < 4;
             let isOrange = status.includes("ORANGE") || (score >= 4 && score < 7);
 
@@ -211,26 +216,22 @@
                 badge.innerText = "⚠️ ARNAQUE";
                 badge.className = "px-3 py-1 rounded-full text-xs font-bold uppercase bg-red-500/20 text-red-400 border border-red-500";
                 title.className = "tech-font text-3xl font-bold mb-2 text-red-500";
-                // AFFICHER LE BOUTON "TROUVER UN GARAGE" SI C'EST ROUGE
                 alternativeSection.classList.remove('hidden');
             } else if (isOrange) {
                 color = "bg-orange-500";
                 badge.innerText = "🟠 UN PEU CHER";
                 badge.className = "px-3 py-1 rounded-full text-xs font-bold uppercase bg-orange-500/20 text-orange-400 border border-orange-500";
                 title.className = "tech-font text-3xl font-bold mb-2 text-orange-400";
-                // AFFICHER LE BOUTON AUSSI SI C'EST ORANGE
                 alternativeSection.classList.remove('hidden');
             } else {
                 badge.innerText = "✅ PRIX CORRECT";
                 badge.className = "px-3 py-1 rounded-full text-xs font-bold uppercase bg-green-500/20 text-green-400 border border-green-500";
                 title.className = "tech-font text-3xl font-bold mb-2 text-green-400";
-                // CACHER LE BOUTON SI C'EST VERT (Pas besoin de changer de garage)
                 alternativeSection.classList.add('hidden');
             }
 
             bar.className = `gauge-fill ${color} h-full`;
             setTimeout(() => { bar.style.width = (score * 10) + "%"; }, 100);
-            
             setTimeout(() => {
                 resultCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }, 100);
