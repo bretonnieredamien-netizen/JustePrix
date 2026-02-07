@@ -96,9 +96,16 @@
             <div class="bg-slate-900/50 rounded-lg p-4 mb-4 border-l-4 border-cyan-500">
                 <p id="analysis-text" class="text-sm text-slate-300 leading-relaxed">...</p>
             </div>
-            <div class="flex gap-3 items-start bg-blue-900/20 p-3 rounded-lg">
-                <i class="fa-solid fa-lightbulb text-yellow-400 mt-1"></i>
-                <p id="advice-text" class="text-xs text-blue-200 italic">...</p>
+            
+            <div class="flex flex-col gap-3 bg-blue-900/20 p-4 rounded-lg">
+                <div class="flex gap-3 items-start">
+                    <i class="fa-solid fa-lightbulb text-yellow-400 mt-1"></i>
+                    <p id="advice-text" class="text-xs text-blue-200 italic">...</p>
+                </div>
+                
+                <button id="copy-neg-btn" class="hidden mt-2 w-full py-2 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded text-xs text-white font-mono flex items-center justify-center gap-2 transition">
+                    <i class="fa-regular fa-copy"></i> Copier l'argumentaire pour négocier
+                </button>
             </div>
 
             <div id="alternative-section" class="hidden mt-6 pt-4 border-t border-slate-700">
@@ -123,6 +130,8 @@
         const alternativeSection = document.getElementById('alternative-section');
         const findProBtn = document.getElementById('find-pro-btn');
         const detectedProfessionText = document.getElementById('detected-profession');
+        const copyNegBtn = document.getElementById('copy-neg-btn');
+        let negotiationText = "";
 
         let selectedFile = null;
         let currentProfession = "Professionnel";
@@ -132,13 +141,11 @@
             document.getElementById('app-browser-alert').classList.remove('hidden');
         }
 
-        // Fonction commune quand un fichier est choisi
         function handleFileSelection(file) {
             if (!file) return;
             selectedFile = file;
             analyzeBtn.classList.remove('hidden');
             
-            // Mise à jour du texte du bouton pour confirmer
             if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
                 analyzeBtn.innerHTML = `<i class="fa-solid fa-file-pdf"></i> Analyser le PDF (${file.name.substring(0,12)}...)`;
                 analyzeBtn.className = "w-full mt-6 py-4 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 rounded-xl font-bold text-white shadow-lg transition";
@@ -148,34 +155,28 @@
             }
         }
 
-        // Écouteur pour la PHOTO
-        inputPhoto.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) handleFileSelection(e.target.files[0]);
-        });
-
-        // Écouteur pour le PDF
-        inputPdf.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) handleFileSelection(e.target.files[0]);
-        });
+        inputPhoto.addEventListener('change', (e) => { if (e.target.files.length > 0) handleFileSelection(e.target.files[0]); });
+        inputPdf.addEventListener('change', (e) => { if (e.target.files.length > 0) handleFileSelection(e.target.files[0]); });
 
         findProBtn.addEventListener('click', () => {
             const searchText = `${currentProfession} bien noté`;
             const mapsUrl = `https://www.google.com/maps/search/${encodeURIComponent(searchText)}/`;
-
             if (navigator.geolocation) {
                 findProBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Localisation...';
                 navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        window.open(mapsUrl, '_blank');
-                        findProBtn.innerHTML = '<i class="fa-solid fa-magnifying-glass-location"></i> Trouver un pro honnête';
-                    },
-                    () => {
-                        window.open(mapsUrl, '_blank');
-                        findProBtn.innerHTML = '<i class="fa-solid fa-magnifying-glass-location"></i> Trouver un pro honnête';
-                    }
+                    () => { window.open(mapsUrl, '_blank'); findProBtn.innerHTML = '<i class="fa-solid fa-magnifying-glass-location"></i> Trouver un pro honnête'; },
+                    () => { window.open(mapsUrl, '_blank'); findProBtn.innerHTML = '<i class="fa-solid fa-magnifying-glass-location"></i> Trouver un pro honnête'; }
                 );
-            } else {
-                window.open(mapsUrl, '_blank');
+            } else { window.open(mapsUrl, '_blank'); }
+        });
+
+        // Fonction copie presse-papier
+        copyNegBtn.addEventListener('click', () => {
+            if (negotiationText) {
+                navigator.clipboard.writeText(negotiationText).then(() => {
+                    copyNegBtn.innerHTML = `<i class="fa-solid fa-check"></i> Copié !`;
+                    setTimeout(() => copyNegBtn.innerHTML = `<i class="fa-regular fa-copy"></i> Copier l'argumentaire`, 2000);
+                });
             }
         });
 
@@ -193,11 +194,10 @@
             loadingState.classList.remove('hidden');
             resultCard.classList.add('hidden');
             alternativeSection.classList.add('hidden');
+            copyNegBtn.classList.add('hidden');
 
             try {
                 const base64Data = await fileToBase64(selectedFile);
-                
-                // Détection MimeType robuste
                 let mime = selectedFile.type;
                 if (!mime && selectedFile.name.toLowerCase().endsWith('.pdf')) mime = 'application/pdf';
                 if (!mime) mime = 'image/jpeg';
@@ -205,10 +205,7 @@
                 const response = await fetch('/api/analyze', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        fileData: base64Data,
-                        mimeType: mime
-                    })
+                    body: JSON.stringify({ fileData: base64Data, mimeType: mime })
                 });
 
                 if (!response.ok) throw new Error(`Erreur serveur`);
@@ -221,7 +218,7 @@
                 try {
                     data = JSON.parse(text);
                 } catch (e) {
-                    data = { status: "ROUGE", score: 0, verdict: "Erreur", analyse: "Document illisible ou non reconnu.", conseil: "Réessayez avec un fichier plus net." };
+                    data = { status: "ROUGE", score: 0, verdict: "Erreur", analyse: "Document illisible.", conseil: "Réessayez." };
                 }
 
                 displayResult(data);
@@ -237,10 +234,19 @@
         });
 
         function displayResult(data) {
+            // VIBRATION (Feedback haptique)
+            if (navigator.vibrate) navigator.vibrate(200);
+
             resultCard.classList.remove('hidden');
             document.getElementById('verdict-title').innerText = data.verdict;
             document.getElementById('analysis-text').innerText = data.analyse;
             document.getElementById('advice-text').innerText = data.conseil;
+
+            // Gestion du texte de négo
+            negotiationText = data.negotiation_text || "";
+            if (negotiationText.length > 10) {
+                copyNegBtn.classList.remove('hidden');
+            }
 
             currentProfession = data.profession || "Professionnel";
             detectedProfessionText.innerText = `Détecté : ${currentProfession}`;
@@ -263,6 +269,7 @@
                 badge.className = "px-3 py-1 rounded-full text-xs font-bold uppercase bg-red-500/20 text-red-400 border border-red-500";
                 title.className = "tech-font text-3xl font-bold mb-2 text-red-500";
                 alternativeSection.classList.remove('hidden');
+                if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 500]); // Vibration d'alerte
             } else if (isOrange) {
                 color = "bg-orange-500";
                 badge.innerText = "🟠 UN PEU CHER";
@@ -274,6 +281,7 @@
                 badge.className = "px-3 py-1 rounded-full text-xs font-bold uppercase bg-green-500/20 text-green-400 border border-green-500";
                 title.className = "tech-font text-3xl font-bold mb-2 text-green-400";
                 alternativeSection.classList.add('hidden');
+                copyNegBtn.classList.add('hidden'); // Pas besoin de négocier si c'est vert
             }
 
             bar.className = `gauge-fill ${color} h-full`;
