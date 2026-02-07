@@ -79,7 +79,15 @@
                 <i class="fa-solid fa-lightbulb text-yellow-400 mt-1"></i>
                 <p id="advice-text" class="text-xs text-blue-200 italic">...</p>
             </div>
-            <button onclick="location.reload()" class="w-full mt-6 py-3 border border-slate-600 hover:bg-slate-700 rounded-xl text-sm font-semibold transition">Scanner un autre</button>
+
+            <div id="alternative-garage-section" class="hidden mt-6 pt-4 border-t border-slate-700">
+                <p class="text-center text-xs text-slate-400 mb-3">Ne vous faites pas avoir 👇</p>
+                <button id="find-garage-btn" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl text-white font-bold shadow-lg flex items-center justify-center gap-2 transition">
+                    <i class="fa-solid fa-location-dot"></i> Trouver un meilleur garage
+                </button>
+            </div>
+
+            <button onclick="location.reload()" class="w-full mt-4 py-3 border border-slate-600 hover:bg-slate-700 rounded-xl text-sm font-semibold transition">Scanner un autre</button>
         </div>
     </main>
 
@@ -90,10 +98,11 @@
         const resultCard = document.getElementById('result-card');
         const loadingState = document.getElementById('loading-state');
         const scanLine = document.getElementById('scan-line');
+        const alternativeSection = document.getElementById('alternative-garage-section');
+        const findGarageBtn = document.getElementById('find-garage-btn');
 
         let selectedFile = null;
 
-        // Détection TikTok
         const ua = navigator.userAgent.toLowerCase();
         if (ua.includes('tiktok') || ua.includes('instagram')) {
             document.getElementById('app-browser-alert').classList.remove('hidden');
@@ -104,6 +113,31 @@
                 selectedFile = e.target.files[0];
                 analyzeBtn.classList.remove('hidden');
                 analyzeBtn.textContent = `Analyser le devis`;
+            }
+        });
+
+        // --- NOUVELLE FONCTION GPS ---
+        findGarageBtn.addEventListener('click', () => {
+            const searchText = "Garage automobile bien noté";
+            
+            if (navigator.geolocation) {
+                findGarageBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Localisation...';
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        // Ouvre Maps avec la recherche centrée sur l'utilisateur
+                        window.open(`https://www.google.com/maps/search/${searchText}/@${lat},${lng},14z`, '_blank');
+                        findGarageBtn.innerHTML = '<i class="fa-solid fa-location-dot"></i> Trouver un meilleur garage';
+                    },
+                    (error) => {
+                        // Si l'utilisateur refuse le GPS, recherche générique
+                        window.open(`https://www.google.com/maps/search/${searchText}+autour+de+moi`, '_blank');
+                        findGarageBtn.innerHTML = '<i class="fa-solid fa-location-dot"></i> Trouver un meilleur garage';
+                    }
+                );
+            } else {
+                window.open(`https://www.google.com/maps/search/${searchText}+autour+de+moi`, '_blank');
             }
         });
 
@@ -118,6 +152,7 @@
             scanLine.style.display = 'block';
             loadingState.classList.remove('hidden');
             resultCard.classList.add('hidden');
+            alternativeSection.classList.add('hidden'); // Cacher le bouton au début
 
             try {
                 const base64Image = await fileToBase64(selectedFile);
@@ -128,23 +163,17 @@
                     body: JSON.stringify({ image: base64Image })
                 });
 
-                if (!response.ok) {
-                    throw new Error(`Erreur serveur : ${response.status}`);
-                }
+                if (!response.ok) throw new Error(`Erreur serveur : ${response.status}`);
 
                 const json = await response.json();
-                
                 let text = json.candidates[0].content.parts[0].text;
                 text = text.replace(/```json/g, '').replace(/```/g, '').trim();
                 
-                // Parsing sécurisé
                 let data;
                 try {
                     data = JSON.parse(text);
                 } catch (e) {
-                    // Si le JSON est mal formé, on force une erreur
-                    console.error("Erreur JSON", text);
-                    data = { status: "ROUGE", score: 0, verdict: "Erreur Analyse", analyse: "L'IA n'a pas pu lire le devis correctement.", conseil: "Réessayez avec une photo plus nette." };
+                    data = { status: "ROUGE", score: 0, verdict: "Erreur Analyse", analyse: "Impossible de lire le devis.", conseil: "Réessayez." };
                 }
 
                 displayResult(data);
@@ -169,42 +198,39 @@
             const bar = document.getElementById('score-bar');
             const title = document.getElementById('verdict-title');
             
-            // --- LOGIQUE DE COULEUR RENFORCÉE ---
-            // On nettoie le status (enlève les espaces, met en majuscules)
             let status = (data.status || "").toUpperCase().trim();
-            // On récupère le score (par défaut 5 si absent)
             let score = typeof data.score === 'number' ? data.score : 5;
 
-            // Logique prioritaire : SI le score est bas OU si le status contient "ROUGE"
             let isRed = status.includes("ROUGE") || score < 4;
             let isOrange = status.includes("ORANGE") || (score >= 4 && score < 7);
 
-            let color = "bg-green-500"; // Par défaut Vert
+            let color = "bg-green-500";
 
             if (isRed) {
-                // CAS ROUGE (Arnaque)
                 color = "bg-red-500";
                 badge.innerText = "⚠️ ARNAQUE";
                 badge.className = "px-3 py-1 rounded-full text-xs font-bold uppercase bg-red-500/20 text-red-400 border border-red-500";
                 title.className = "tech-font text-3xl font-bold mb-2 text-red-500";
+                // AFFICHER LE BOUTON "TROUVER UN GARAGE" SI C'EST ROUGE
+                alternativeSection.classList.remove('hidden');
             } else if (isOrange) {
-                // CAS ORANGE (Cher)
                 color = "bg-orange-500";
                 badge.innerText = "🟠 UN PEU CHER";
                 badge.className = "px-3 py-1 rounded-full text-xs font-bold uppercase bg-orange-500/20 text-orange-400 border border-orange-500";
                 title.className = "tech-font text-3xl font-bold mb-2 text-orange-400";
+                // AFFICHER LE BOUTON AUSSI SI C'EST ORANGE
+                alternativeSection.classList.remove('hidden');
             } else {
-                // CAS VERT (Correct)
                 badge.innerText = "✅ PRIX CORRECT";
                 badge.className = "px-3 py-1 rounded-full text-xs font-bold uppercase bg-green-500/20 text-green-400 border border-green-500";
                 title.className = "tech-font text-3xl font-bold mb-2 text-green-400";
+                // CACHER LE BOUTON SI C'EST VERT (Pas besoin de changer de garage)
+                alternativeSection.classList.add('hidden');
             }
 
             bar.className = `gauge-fill ${color} h-full`;
-            // Animation de la barre
             setTimeout(() => { bar.style.width = (score * 10) + "%"; }, 100);
             
-            // Scroll automatique vers le résultat
             setTimeout(() => {
                 resultCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }, 100);
