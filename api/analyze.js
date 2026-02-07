@@ -29,28 +29,26 @@ export default async function handler(req) {
 
         const { fileData, mimeType } = await req.json();
 
-        // --- PROMPT AVEC KIT DE NEGOCIATION ---
+        // --- PROMPT "DIPLOMATE & EXPERT" ---
         const prompt = `
-        Tu es un expert tarification réaliste (Marché 2026).
-        Analyse ce devis (Image ou PDF).
+        Tu es un expert en négociation de travaux et services (Marché 2026).
+        Analyse ce devis.
 
-        RÈGLES :
-        1. CONTEXTE 2026 : Prends en compte l'inflation.
-        2. LOCALISATION : Tolère +30% pour les grandes villes.
-        3. BARÈME :
-           - Prix moyen à +25% : "VERT".
-           - +30% à +50% : "ORANGE".
-           - > +60% ou incohérent : "ROUGE".
+        OBJECTIF : Fournir une analyse juste et un texte de négociation respectueux qui ne braque pas l'artisan.
 
-        FORMAT JSON :
+        RÈGLES DE JUGEMENT :
+        1. Contextualise (Ville, Urgence, Complexité).
+        2. Tolérance : Accepte jusqu'à +25% au dessus du marché (Qualité).
+        
+        FORMAT JSON ATTENDU :
         {
             "profession": "Métier identifié",
             "score": (Note sur 10),
             "status": "VERT" ou "ORANGE" ou "ROUGE",
-            "verdict": "Titre court (ex: Main d'oeuvre abusive)",
-            "analyse": "Explication factuelle.",
-            "conseil": "Conseil pro.",
-            "negotiation_text": "Un texte court (SMS style) que le client peut copier pour négocier avec le pro. (ex: 'Bonjour, j'ai comparé votre devis, le poste X me semble 30% au dessus du marché...')"
+            "verdict": "Titre court",
+            "analyse": "Analyse factuelle des prix.",
+            "conseil": "Conseil technique ou stratégique.",
+            "negotiation_text": "Rédige un message (Email/SMS) diplomatique, poli et construit. Structure : 1. Remercie pour le devis et la réactivité. 2. Valide la qualité perçue. 3. Pointe spécifiquement l'élément qui bloque (Main d'oeuvre ou Matériau X) en disant 'J'ai noté que ce poste est au-dessus des standards habituels'. 4. Propose une ouverture : 'Si un geste est possible sur ce point, je suis prêt à valider le devis rapidement'. Ton : Partenariat, pas confrontation."
         }
         `;
 
