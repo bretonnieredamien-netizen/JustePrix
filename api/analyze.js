@@ -1,10 +1,8 @@
-// Fichier: api/analyze.js
 export const config = {
-    runtime: 'edge', // Rend l'API ultra rapide
+    runtime: 'edge',
 };
 
 export default async function handler(req) {
-    // 1. Sécurité (CORS) - Pour autoriser ton site à parler au serveur
     if (req.method === 'OPTIONS') {
         return new Response(null, {
             status: 200,
@@ -21,10 +19,9 @@ export default async function handler(req) {
     }
 
     try {
-        // 2. Récupération de la clé cachée
         const API_KEY = process.env.GEMINI_API_KEY;
         if (!API_KEY) {
-            return new Response(JSON.stringify({ error: 'Clé API non configurée sur Vercel' }), { 
+            return new Response(JSON.stringify({ error: 'Clé API non configurée' }), { 
                 status: 500,
                 headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
             });
@@ -32,16 +29,31 @@ export default async function handler(req) {
 
         const { image } = await req.json();
 
-        // 3. Appel Direct à Google (Modèle Gemini 2.0 Flash)
+        // --- LE SECRET EST ICI : PROMPT UNIVERSEL ---
+        const prompt = `
+        Tu es un expert universel en tarification (Bâtiment, Auto, Santé, Services).
+        1. IDENTIFIE le type de devis (ex: Plomberie, Paysagiste, Dentiste, Garage, Rénovation Toiture...).
+        2. ANALYSE les prix par rapport au marché français actuel.
+        3. VERDICT : Est-ce honnête ou abusif ?
+
+        Réponds UNIQUEMENT ce JSON brut :
+        {
+            "profession": "Le métier identifié (ex: Plombier)",
+            "score": (Note sur 10. 10=Prix Excellent, 0=Grosse Arnaque),
+            "status": "VERT" (Honnête) ou "ORANGE" (Cher) ou "ROUGE" (Arnaque),
+            "verdict": "Titre court (ex: Main d'oeuvre abusive !)",
+            "analyse": "Explication claire en 2 phrases sur les prix constatés.",
+            "conseil": "Conseil d'expert pour négocier ou valider."
+        }
+        `;
+
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 contents: [{
                     parts: [
-                        { text: `Tu es un expert automobile. Analyse ce devis.
-                        Prix Ref TTC : Vidange 100€, Freins 150€, Distri 600€, Diag 70€. Si Luxe +30%.
-                        Réponds UNIQUEMENT ce JSON : {"score": 5, "status": "ORANGE", "verdict": "Cher", "analyse": "...", "conseil": "..."}` },
+                        { text: prompt },
                         { inline_data: { mime_type: "image/jpeg", data: image } }
                     ]
                 }]
@@ -50,7 +62,6 @@ export default async function handler(req) {
 
         const data = await response.json();
 
-        // 4. Renvoi de la réponse au site
         return new Response(JSON.stringify(data), {
             status: 200,
             headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
