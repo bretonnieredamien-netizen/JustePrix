@@ -20,7 +20,7 @@
         @keyframes slideDown { from { transform: translateY(-100%); } to { transform: translateY(0); } }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden">
+<body class="min-h-screen flex flex-col items-center p-4 relative">
 
     <div id="app-browser-alert" class="hidden fixed top-0 left-0 right-0 bg-indigo-600 text-white z-[9999] shadow-2xl animate-[slideDown_0.5s_ease-out]">
         <div class="container mx-auto px-4 py-3 text-center text-sm">
@@ -38,7 +38,7 @@
         <p class="text-slate-400 text-sm">Scan ton devis garage en 2 secondes.</p>
     </header>
 
-    <main class="w-full max-w-md z-10">
+    <main class="w-full max-w-md z-10 mb-10">
         <div id="upload-card" class="bg-slate-800/80 backdrop-blur-md border border-slate-700 rounded-2xl p-6 shadow-2xl relative overflow-hidden">
             <div id="scan-line" class="scan-line z-20"></div>
             <div class="text-center space-y-6">
@@ -93,7 +93,6 @@
 
         let selectedFile = null;
 
-        // Détection TikTok
         const ua = navigator.userAgent.toLowerCase();
         if (ua.includes('tiktok') || ua.includes('instagram')) {
             document.getElementById('app-browser-alert').classList.remove('hidden');
@@ -114,7 +113,6 @@
         });
 
         analyzeBtn.addEventListener('click', async () => {
-            // UI Update
             analyzeBtn.disabled = true;
             scanLine.style.display = 'block';
             loadingState.classList.remove('hidden');
@@ -123,7 +121,6 @@
             try {
                 const base64Image = await fileToBase64(selectedFile);
 
-                // --- APPEL VERS TON SERVEUR VERCEL (SECURISÉ) ---
                 const response = await fetch('/api/analyze', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -136,7 +133,6 @@
 
                 const json = await response.json();
                 
-                // Extraction & Nettoyage (si Gemini a bavardé autour du JSON)
                 let text = json.candidates[0].content.parts[0].text;
                 text = text.replace(/```json/g, '').replace(/```/g, '').trim();
                 const data = JSON.parse(text);
@@ -166,25 +162,28 @@
             let color = "bg-green-500";
             let status = (data.status || "VERT").toUpperCase();
 
+            // MODIF ICI : Application des couleurs sur le TITRE aussi
             if (status === "ROUGE") {
                 color = "bg-red-500";
                 badge.innerText = "⚠️ ARNAQUE";
                 badge.className = "px-3 py-1 rounded-full text-xs font-bold uppercase bg-red-500/20 text-red-400 border border-red-500";
-                title.className = "tech-font text-3xl font-bold mb-2 text-red-500";
+                title.className = "tech-font text-3xl font-bold mb-2 text-red-500"; // Titre Rouge
             } else if (status === "ORANGE") {
                 color = "bg-orange-500";
                 badge.innerText = "🟠 UN PEU CHER";
                 badge.className = "px-3 py-1 rounded-full text-xs font-bold uppercase bg-orange-500/20 text-orange-400 border border-orange-500";
-                title.className = "tech-font text-3xl font-bold mb-2 text-orange-400";
+                title.className = "tech-font text-3xl font-bold mb-2 text-orange-400"; // Titre Orange
             } else {
                 badge.innerText = "✅ PRIX CORRECT";
                 badge.className = "px-3 py-1 rounded-full text-xs font-bold uppercase bg-green-500/20 text-green-400 border border-green-500";
-                title.className = "tech-font text-3xl font-bold mb-2 text-green-400";
+                title.className = "tech-font text-3xl font-bold mb-2 text-green-400"; // Titre Vert
             }
 
             bar.className = `gauge-fill ${color} h-full`;
             setTimeout(() => { bar.style.width = (data.score * 10) + "%"; }, 100);
-            resultCard.scrollIntoView({ behavior: 'smooth' });
+            
+            // MODIF ICI : Scroll automatique vers le résultat pour être sûr qu'il est visible
+            resultCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     </script>
 </body>
