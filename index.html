@@ -24,7 +24,7 @@
 
     <div id="app-browser-alert" class="hidden fixed top-0 left-0 right-0 bg-indigo-600 text-white z-[9999] shadow-2xl animate-[slideDown_0.5s_ease-out]">
         <div class="container mx-auto px-4 py-3 text-center text-sm">
-            ⚠️ Navigateur TikTok détecté. Ouvrez sur <strong>Chrome</strong> ou <strong>Safari</strong> pour importer des fichiers.
+            ⚠️ Navigateur TikTok détecté. Ouvrez sur <strong>Chrome</strong> ou <strong>Safari</strong>.
         </div>
     </div>
 
@@ -137,7 +137,6 @@
         let selectedFile = null;
         let currentProfession = "Professionnel";
 
-        // Détection navigateur TikTok
         const ua = navigator.userAgent.toLowerCase();
         if (ua.includes('tiktok') || ua.includes('instagram')) {
             document.getElementById('app-browser-alert').classList.remove('hidden');
@@ -160,7 +159,6 @@
         inputPhoto.addEventListener('change', (e) => { if (e.target.files.length > 0) handleFileSelection(e.target.files[0]); });
         inputPdf.addEventListener('change', (e) => { if (e.target.files.length > 0) handleFileSelection(e.target.files[0]); });
 
-        // Bouton GPS
         findProBtn.addEventListener('click', () => {
             const searchText = `${currentProfession} bien noté`;
             const mapsUrl = `https://www.google.com/maps/search/${encodeURIComponent(searchText)}/`;
@@ -173,7 +171,6 @@
             } else { window.open(mapsUrl, '_blank'); }
         });
 
-        // Bouton Copier
         copyNegBtn.addEventListener('click', () => {
             if (negotiationText) {
                 navigator.clipboard.writeText(negotiationText).then(() => {
@@ -192,7 +189,6 @@
         analyzeBtn.addEventListener('click', async () => {
             if (!selectedFile) return;
 
-            // UI Loading
             analyzeBtn.disabled = true;
             scanLine.style.display = 'block';
             loadingState.classList.remove('hidden');
@@ -206,16 +202,25 @@
                 if (!mime && selectedFile.name.toLowerCase().endsWith('.pdf')) mime = 'application/pdf';
                 if (!mime) mime = 'image/jpeg';
 
-                // --- APPEL API SÉCURISÉ (Pas de clé ici !) ---
                 const response = await fetch('/api/analyze', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ fileData: base64Data, mimeType: mime })
                 });
 
-                if (!response.ok) throw new Error(`Erreur serveur`);
-
+                // GESTION D'ERREUR ROBUSTE (C'est ici que ça plantait avant)
                 const json = await response.json();
+
+                // 1. Si le backend renvoie une erreur explicite
+                if (json.error) {
+                    throw new Error(json.error.message || JSON.stringify(json.error));
+                }
+
+                // 2. Si l'IA n'a pas renvoyé de "candidates" (c'est ça qui causait "undefined")
+                if (!json.candidates || !json.candidates[0] || !json.candidates[0].content) {
+                    throw new Error("L'IA n'a pas pu analyser ce fichier. Vérifiez votre clé API ou le format du fichier.");
+                }
+
                 let text = json.candidates[0].content.parts[0].text;
                 text = text.replace(/```json/g, '').replace(/```/g, '').trim();
                 
@@ -223,14 +228,14 @@
                 try {
                     data = JSON.parse(text);
                 } catch (e) {
-                    data = { status: "ROUGE", score: 0, verdict: "Erreur", analyse: "Document illisible.", conseil: "Réessayez avec un fichier plus net." };
+                    data = { status: "ROUGE", score: 0, verdict: "Erreur Lecture", analyse: "Format de réponse invalide.", conseil: "Réessayez." };
                 }
 
                 displayResult(data);
 
             } catch (error) {
                 console.error(error);
-                alert("Erreur: " + error.message);
+                alert("Oups ! Une erreur est survenue : " + error.message);
             } finally {
                 scanLine.style.display = 'none';
                 loadingState.classList.add('hidden');
