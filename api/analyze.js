@@ -3,7 +3,6 @@ export const config = {
 };
 
 export default async function handler(req) {
-    // Gestion des autorisations (CORS)
     if (req.method === 'OPTIONS') {
         return new Response(null, {
             status: 200,
@@ -28,29 +27,29 @@ export default async function handler(req) {
             });
         }
 
-        const { image } = await req.json();
+        // On récupère le fichier (fileData) et son type (mimeType)
+        const { fileData, mimeType } = await req.json();
 
-        // --- NOUVEAU PROMPT "REALISTE" ---
         const prompt = `
         Tu es un expert tarification réaliste et pragmatique (Contexte économique 2024-2025).
-        Ta mission : Analyser ce devis (Bâtiment, Auto, Santé, Services, etc.) et rassurer l'utilisateur ou l'alerter.
+        Ta mission : Analyser ce document (Devis PDF ou Image) et rassurer l'utilisateur ou l'alerter.
 
-        RÈGLES DE JUGEMENT (TRES IMPORTANT) :
-        1. LOCALISATION : Cherche l'adresse sur le devis. Si c'est une grande ville (Paris, Lyon, etc.) ou une zone dense, tolère automatiquement des prix +30% plus élevés.
-        2. INFLATION : Prends en compte la hausse récente des matières premières et main d'oeuvre. Ne te base pas sur des prix datés.
+        RÈGLES DE JUGEMENT :
+        1. LOCALISATION : Cherche l'adresse. Si grande ville/zone dense, tolère prix +30%.
+        2. INFLATION : Prends en compte la hausse des matériaux/main d'oeuvre.
         3. TOLERANCE : 
-           - Si le prix est dans la moyenne ou jusqu'à +20% au-dessus : C'est "VERT" (Correct/Standard). La qualité se paie.
-           - Si le prix est +30% à +50% au-dessus : C'est "ORANGE" (Un peu cher).
-           - Si le prix dépasse +60% ou contient des incohérences flagrantes : C'est "ROUGE" (Arnaque).
+           - Prix moyen ou jusqu'à +20% : "VERT" (Correct).
+           - +30% à +50% : "ORANGE" (Un peu cher).
+           - > +60% ou incohérent : "ROUGE" (Arnaque).
 
-        FORMAT DE REPONSE ATTENDU (JSON BRUT) :
+        FORMAT JSON :
         {
-            "profession": "Le métier identifié (ex: Couvreur, Garagiste, Dentiste...)",
-            "score": (Note sur 10. 8-10 = Prix Excellent/Correct, 5-7 = Un peu cher, 0-4 = Arnaque),
-            "status": "VERT" (si note >= 7) ou "ORANGE" (si note entre 4 et 6) ou "ROUGE" (si note < 4),
-            "verdict": "Titre court et rassurant si vert (ex: Prix Cohérent)",
-            "analyse": "Explication bienveillante. Si c'est un peu cher, explique que c'est peut-être dû à la qualité ou la région.",
-            "conseil": "Conseil pro (ex: Vérifiez juste les délais, sinon foncez)."
+            "profession": "Métier identifié (ex: Maçon, Pisciniste, Garagiste...)",
+            "score": (Note sur 10),
+            "status": "VERT" ou "ORANGE" ou "ROUGE",
+            "verdict": "Titre court",
+            "analyse": "Explication bienveillante et factuelle.",
+            "conseil": "Conseil pro."
         }
         `;
 
@@ -61,7 +60,12 @@ export default async function handler(req) {
                 contents: [{
                     parts: [
                         { text: prompt },
-                        { inline_data: { mime_type: "image/jpeg", data: image } }
+                        { 
+                            inline_data: { 
+                                mime_type: mimeType, // ICI : On passe "application/pdf" ou "image/jpeg" dynamiquement
+                                data: fileData 
+                            } 
+                        }
                     ]
                 }]
             })
